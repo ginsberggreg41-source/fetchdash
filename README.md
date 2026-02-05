@@ -1,200 +1,280 @@
-# Fetch Campaign Analytics Dashboard
+---
 
-An internal analytics tool for Fetch Rewards account managers to analyze campaign performance, track pacing, measure promo lift, and calculate upsell opportunities.
+## 📊 How Calculations Work
 
-![Dashboard Preview](https://via.placeholder.com/800x400?text=Fetch+Campaign+Dashboard)
+This dashboard performs **all calculations client-side** in your browser. Your data never leaves your computer. Here's what happens under the hood:
 
-## Features
+---
 
-- **📊 Performance Overview** — Sales, spend, units, buyers, ROAS with multi-metric charting
-- **🚀 Pacing & Upsell** — Budget pacing, projections, and extension calculator
-- **✨ Promo Analysis** — Pre/during/post comparison for Pops & Fetch Topia
-- **🔄 Conversion Funnel** — Buyer vs Redeemer behavior analysis
-- **📈 Offer Deep Dive** — Segment-level performance with CAC context
+### 1️⃣ **CSV Parsing & Data Extraction**
 
-## Quick Start (Local Development)
+When you upload a CSV from Mission Control, the dashboard automatically:
 
-### Prerequisites
-- Node.js 18+ installed ([download here](https://nodejs.org/))
-- Git installed ([download here](https://git-scm.com/))
+- Parses campaign metadata (name, dates, budget)
+- Extracts offer-level data for each segment
+- Processes daily performance data (sales, units, trips, buyers, cost)
+- Detects offer types (Acquisition vs Brand Buyer)
+- Identifies spend threshold offers
 
-### Steps
+---
 
-```bash
-# 1. Clone or download this folder
-cd fetch-dashboard
+### 2️⃣ **Core Metrics**
 
-# 2. Install dependencies
-npm install
+#### **Performance Metrics**
+| Metric | Formula |
+|--------|---------|
+| **ROAS** | `Sales ÷ Cost` |
+| **CAC** (Customer Acquisition Cost) | `Cost ÷ Buyers` |
+| **Cost Per Unit** | `Cost ÷ Units` |
+| **Sales Per Buyer** | `Sales ÷ Buyers` |
+| **Units Per Buyer** | `Units ÷ Buyers` |
 
-# 3. Start development server
-npm run dev
+#### **Conversion Metrics**
+| Metric | Formula |
+|--------|---------|
+| **Completion Rate** | `(Redeemers ÷ Buyers) × 100` |
+| **Engagement Rate** | `(Buyers ÷ Audience) × 100` |
+| **Trips Per Buyer** | `Trips ÷ Buyers` |
+| **Value Per Trip** | `Sales ÷ Trips` |
 
-# 4. Open http://localhost:5173 in your browser
+#### **Per-Offer Calculations**
+- **Buyer Value Per Trip** = `Buyer Sales ÷ Buyer Trips`
+- **Redeemer Value Per Trip** = `Redeemer Sales ÷ Redeemer Trips`
+- **Cost Per Redeemer** = `Cost ÷ Redeemers`
+
+---
+
+### 3️⃣ **Pacing & Budget Tracking**
+
+#### **Time & Budget Metrics**
+```
+Total Spent = Sum of all daily costs
+Remaining Budget = Total Budget - Total Spent
+Days Elapsed = Today - Start Date
+Days Remaining = End Date - Today
+```
+
+#### **Spend Velocity**
+```
+Overall Avg Daily Spend = Total Spent ÷ Days Elapsed
+Recent Avg Daily Spend = Last 14 days' spend ÷ 14
+```
+
+#### **Projections**
+```
+Projected Total Spend = Avg Daily Spend × Total Campaign Days
+Days Until Budget Exhausted = Remaining Budget ÷ Avg Daily Spend
+Projected End Date = Today + Days Until Exhausted
+```
+
+#### **Pacing Status**
+```
+Expected Spend By Now = (Days Elapsed ÷ Total Days) × Total Budget
+Pacing Ratio = Actual Spend ÷ Expected Spend
+Days Variance = Projected End Date - Target End Date
+```
+
+**Status Logic:**
+- 🚀 **Ending Early**: Days Variance < -7 days
+- ⏸️ **Under Pacing**: Days Variance > 14 days  
+- ✅ **On Track**: Within ±7-14 day range
+- ✓ **Complete**: Campaign ended
+
+#### **Percentage Metrics**
+```
+Budget Consumed % = (Total Spent ÷ Total Budget) × 100
+Time Elapsed % = (Days Elapsed ÷ Total Days) × 100
 ```
 
 ---
 
-## 🚀 Deploy to Vercel (Recommended)
+### 4️⃣ **Extension Calculator**
 
-### Option A: Deploy via Vercel CLI (Fastest)
+Calculate the cost of extending your campaign:
+```
+Extension Days Conversion:
+  - If "weeks" selected: Days × 7
+  - If "months" selected: Days × 30
 
-```bash
-# 1. Install Vercel CLI globally
-npm install -g vercel
-
-# 2. Navigate to project folder
-cd fetch-dashboard
-
-# 3. Deploy (follow prompts)
-vercel
-
-# 4. For production deployment
-vercel --prod
+Extension Cost = Recent Avg Daily Spend × Extension Days
+New End Date = Current End Date + Extension Days
 ```
 
-### Option B: Deploy via GitHub + Vercel Dashboard
+**Example:** Extending 2 weeks with $500/day avg spend = $7,000 additional budget needed
 
-#### Step 1: Push to GitHub
+---
 
-```bash
-# Initialize git repo
-git init
+### 5️⃣ **Promo Analysis (Pops / Fetch Topia)**
 
-# Add all files
-git add .
+Compares performance across three equal-length periods:
 
-# Commit
-git commit -m "Initial commit - Fetch Campaign Dashboard"
-
-# Create repo on GitHub (go to github.com/new)
-# Then connect and push:
-git remote add origin https://github.com/YOUR_USERNAME/fetch-dashboard.git
-git branch -M main
-git push -u origin main
+#### **Time Periods**
+```
+Promo Period = User-selected start/end dates
+Pre Period = Same # of days BEFORE promo starts
+Post Period = Same # of days AFTER promo ends
 ```
 
-#### Step 2: Connect to Vercel
-
-1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
-2. Click **"Add New Project"**
-3. Select your `fetch-dashboard` repository
-4. Vercel auto-detects Vite settings — just click **"Deploy"**
-5. Wait ~60 seconds for deployment
-6. Get your live URL: `https://fetch-dashboard-xxxxx.vercel.app`
-
-#### Step 3: Custom Domain (Optional)
-
-1. In Vercel dashboard, go to **Settings → Domains**
-2. Add your custom domain (e.g., `fetch-analytics.yourcompany.com`)
-3. Follow DNS configuration instructions
-
----
-
-## 📁 Project Structure
-
+#### **For Each Period**
 ```
-fetch-dashboard/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── App.jsx          # Main dashboard component
-│   ├── main.jsx         # React entry point
-│   └── index.css        # Tailwind CSS
-├── index.html           # HTML template
-├── package.json         # Dependencies
-├── vite.config.js       # Vite configuration
-├── tailwind.config.js   # Tailwind configuration
-├── postcss.config.js    # PostCSS configuration
-├── vercel.json          # Vercel deployment config
-└── README.md            # This file
+Total Sales = Sum of daily sales
+Total Units = Sum of daily units  
+Total Buyers = Sum of daily buyers
+Total Cost = Sum of daily cost
+ROAS = Sales ÷ Cost
+Avg Daily Sales = Total Sales ÷ Days in period
 ```
 
----
-
-## 📋 How to Use
-
-### Uploading Data
-
-1. Export campaign data from Fetch Rewards platform as CSV
-2. Click **"Upload CSV"** button
-3. Select one or multiple campaign files
-4. Dashboard automatically parses and displays data
-
-### Tabs Overview
-
-| Tab | Purpose |
-|-----|---------|
-| **Overview** | High-level metrics, multi-metric charts, date filtering |
-| **Pacing & Upsell** | Budget tracking, projections, extension calculator |
-| **Promo Analysis** | Pops/Fetch Topia pre/during/post comparison |
-| **Conversion** | Buyer vs Redeemer funnel, completion rates |
-| **Offer Deep Dive** | Individual offer analysis by segment |
-
-### Key Metrics Explained
-
-- **CAC (Customer Acquisition Cost)** — Only relevant for NCE & Competitive segments
-- **Completion Rate** — Redeemers ÷ Buyers (what % finish the offer)
-- **ROAS** — Return on Ad Spend (Sales ÷ Cost)
-- **Sales Lift** — Incremental sales vs control group
-
----
-
-## 🔧 Customization
-
-### Adding New Metrics
-
-Edit `src/App.jsx` and add to the `metricConfig` object:
-
-```javascript
-const metricConfig = {
-  // ... existing metrics
-  newMetric: { 
-    label: 'New Metric', 
-    color: '#FF5733', 
-    format: formatCurrency, 
-    yAxisId: 'currency' 
-  }
-};
+#### **Lift Calculations (vs Pre-Period)**
+```
+Sales Lift % = ((During Sales - Pre Sales) ÷ Pre Sales) × 100
+Units Lift % = ((During Units - Pre Units) ÷ Pre Units) × 100
+Buyer Lift % = ((During Buyers - Pre Buyers) ÷ Pre Buyers) × 100
 ```
 
-### Changing Colors
-
-Update Tailwind classes in the component or modify `tailwind.config.js`.
+**Example:** If pre-period sales = $10K and during-promo = $15K, then **Sales Lift = +50%**
 
 ---
 
-## 🤝 Team Usage
+### 6️⃣ **Conversion Funnel**
 
-Share the Vercel URL with your team. Each person can:
-- Upload their own campaign CSVs
-- Data stays in their browser (not stored on server)
-- No login required
+Analyzes the buyer journey from awareness to redemption:
 
----
+#### **Funnel Stages**
+```
+1. Audience (total addressable users)
+2. Buyers (users who made qualifying purchases)
+3. Redeemers (users who completed the offer)
+```
 
-## 🐛 Troubleshooting
+#### **Drop-off Calculation**
+```
+Drop-off % = ((Current Stage - Next Stage) ÷ Current Stage) × 100
+```
 
-**CSV not parsing correctly?**
-- Ensure it's exported directly from Fetch Rewards
-- Check the file has the "Buyer Volume" section with daily data
+**Example:**  
+- 100K Audience → 10K Buyers = **90% drop-off**
+- 10K Buyers → 7K Redeemers = **30% drop-off**
 
-**Charts not showing?**
-- Make sure date range includes days with data
-- Check browser console for errors (F12 → Console)
-
-**Deployment failing?**
-- Run `npm run build` locally to check for errors
-- Ensure all dependencies are in `package.json`
-
----
-
-## 📝 License
-
-Internal use only — Fetch Rewards Account Management Team
+#### **Completion Rate**
+```
+Completion Rate = (Redeemers ÷ Buyers) × 100
+```
 
 ---
 
-## 🙋 Support
+### 7️⃣ **Period Comparison**
 
-Questions? Reach out to the team or open an issue in the GitHub repo.
+Compare any two date ranges:
+```
+% Change = ((Current Period - Comparison Period) ÷ Comparison Period) × 100
+```
+
+Applied to all metrics: Sales, Cost, Units, Buyers, ROAS, CAC
+
+---
+
+### 8️⃣ **Cumulative Spend Tracking**
+
+Tracks actual vs. expected spend over time:
+```
+For each day:
+  Cumulative Actual = Running sum of daily costs
+  Expected By Day = (Day Number ÷ Total Days) × Total Budget
+  
+Creates three lines on chart:
+  - Actual spend (blue)
+  - Expected pacing (dashed)
+  - Total budget (ceiling)
+```
+
+---
+
+### 9️⃣ **Automated Insights**
+
+The dashboard generates insights based on your data:
+
+#### **Completion Rate Insights**
+- ⚠️ **Low Completion** if < 50%
+- ✅ **Strong Completion** if > 70%
+
+#### **Value Insights**
+```
+Value Multiplier = Redeemer $/Trip ÷ Buyer $/Trip
+
+If Multiplier > 1.1:
+  → "Redeemers spend X% more per trip than average buyers"
+```
+
+---
+
+### 🔟 **CAC Context & Segmentation**
+
+#### **Acquisition Tactics** (CAC is meaningful)
+- New Category Entrant (NCE)
+- Competitive Targeting
+- Conquest campaigns
+
+**CAC Formula:** `Cost ÷ New Buyers`
+
+#### **Brand Buyer Tactics** (CAC not applicable)
+- Loyalist retention
+- Lapsed buyer reactivation
+- Brand buyer engagement
+
+**Note:** For Brand Buyer segments, focus on **ROAS** and **Sales Lift** instead of CAC, since these users already purchase your brand.
+
+---
+
+### 📈 **Chart Data**
+
+**Multi-Metric Visualization:**
+- Supports up to 4 metrics simultaneously
+- Intelligent axis assignment:
+  - **Currency Axis** (left): Sales, Cost, CAC, Cost/Unit
+  - **Count Axis** (right): Units, Buyers, Trips
+  - **Ratio Axis** (right): ROAS
+- Auto-samples data if > 30 days to prevent chart overcrowding
+
+---
+
+### 🔒 **Data Privacy**
+
+All calculations happen **client-side** in your browser using JavaScript:
+- **No data uploaded to servers**
+- **No external API calls for calculations**
+- **CSV data stays in browser memory**
+- **Cleared when you close the tab**
+
+---
+
+### 💡 **Pro Tips**
+
+**For Best Results:**
+- ✅ Use date filters to isolate specific events (Pops, Fetch Topia)
+- ✅ Compare pre/during/post periods for lift analysis
+- ✅ Check pacing weekly to catch under/overspending early
+- ✅ Focus on ROAS + Sales Lift for brand buyer offers
+- ✅ Focus on CAC for acquisition offers (NCE, Competitive)
+- ✅ Account for ramp-up time on spend threshold offers (4-6 weeks)
+
+---
+
+## ❓ Calculation FAQs
+
+**Q: Why is my CAC showing "N/A" for some offers?**  
+A: CAC is only calculated for acquisition segments (NCE, Competitive). Brand Buyer offers show "N/A" because these customers already purchase your brand—cost per buyer ≠ true acquisition cost.
+
+**Q: How is "Recent Avg Spend" calculated?**  
+A: Last 14 days of spend ÷ 14. This gives a more current picture than overall average, especially if pacing has changed mid-campaign.
+
+**Q: What's the difference between Buyers and Redeemers?**  
+A: **Buyers** = users who made qualifying purchases. **Redeemers** = users who completed the full offer requirements. Completion Rate = Redeemers ÷ Buyers.
+
+**Q: Why does my promo analysis show three periods?**  
+A: To measure true lift, we compare equal-length periods: Pre (baseline), During (promo effect), and Post (residual effect). This isolates the promo's impact.
+
+**Q: How accurate are spend projections?**  
+A: Projections use historical avg daily spend. Accuracy improves after 2-3 weeks of data. Spend threshold offers may show slow early pacing—wait 4-6 weeks for accurate reads.
+
+---
