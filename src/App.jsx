@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, ScatterChart, Scatter, Cell, ReferenceLine, AreaChart } from 'recharts';
-import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, BookOpen } from 'lucide-react';
+import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, Wand2, Loader2, MessageSquare } from 'lucide-react';
 
 // Parse the Fetch Rewards CSV format
 const parseCSV = (text, fileName) => {
@@ -36,7 +36,7 @@ const parseCSV = (text, fileName) => {
       continue;
     }
     
-    if (section === 'header' && /^\d{2}\/\d{2}\/\d{4}/.test(line)) {
+    if (section === 'header' && /^\d{1,2}\/\d{1,2}\/\d{4}/.test(line)) {
       const prevLine = lines[i - 1];
       if (prevLine && prevLine.includes('Start Date')) {
         const headers = parseCSVLine(prevLine);
@@ -499,6 +499,60 @@ const InsightCard = ({ type, title, description, metric, icon: Icon }) => {
   );
 };
 
+// AI Insight Panel Component
+const AIInsightPanel = ({ insight, loading, error, onGenerate, analysisType }) => {
+  return (
+    <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border border-violet-200 p-6 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Wand2 className="text-violet-600" size={20} />
+          <h3 className="font-semibold text-violet-800">AI Campaign Insights</h3>
+        </div>
+        <button
+          onClick={() => onGenerate(analysisType)}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Analyzing...
+            </>
+          ) : (
+            <>
+              <Wand2 size={16} />
+              Generate Insights
+            </>
+          )}
+        </button>
+      </div>
+      
+      {error && (
+        <div className="bg-rose-100 border border-rose-200 rounded-lg p-4 text-rose-700 text-sm">
+          {error}
+        </div>
+      )}
+      
+      {insight && !loading && (
+        <div className="bg-white rounded-xl p-4 border border-violet-100">
+          <div className="flex items-start gap-3">
+            <MessageSquare className="text-violet-500 mt-1 flex-shrink-0" size={18} />
+            <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
+              {insight}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {!insight && !loading && !error && (
+        <p className="text-sm text-violet-600">
+          Click "Generate Insights" to get an AI-powered analysis of your campaign data.
+        </p>
+      )}
+    </div>
+  );
+};
+
 // Main Dashboard
 export default function FetchDashboard() {
   const [campaigns, setCampaigns] = useState([]);
@@ -521,6 +575,201 @@ export default function FetchDashboard() {
   const [promoType, setPromoType] = useState('pops');
   const [promoStart, setPromoStart] = useState('');
   const [promoEnd, setPromoEnd] = useState('');
+
+  // AI Insights state
+  const [aiInsight, setAiInsight] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+
+  // AI Analysis function
+  const getAIInsight = async (analysisType) => {
+    setAiLoading(true);
+    setAiError('');
+    setAiInsight('');
+
+    try {
+      let campaignData = { campaignName: selectedCampaign?.campaignName };
+
+      if (analysisType === 'overview') {
+        campaignData = {
+          ...campaignData,
+          dateRange: `${dateRange.start} to ${dateRange.end}`,
+          sales: metrics.current.sales,
+          cost: metrics.current.cost,
+          roas: metrics.current.roas,
+          units: metrics.current.units,
+          buyers: metrics.current.buyers,
+          cac: metrics.current.cac,
+          costPerUnit: metrics.current.costPerUnit,
+          offers: selectedCampaign?.offers?.map(o => ({
+            tactic: o['Tactic'],
+            roas: o.roasNum,
+            buyers: o.buyersNum,
+            completionRate: o.completionRate
+          }))
+        };
+      } else if (analysisType === 'pacing' && pacingMetrics) {
+        campaignData = {
+          ...campaignData,
+          budget: pacingMetrics.totalBudget,
+          spent: pacingMetrics.totalSpent,
+          budgetConsumedPct: pacingMetrics.budgetConsumedPct,
+          daysElapsed: pacingMetrics.daysElapsed,
+          totalDays: pacingMetrics.totalCampaignDays,
+          timeElapsedPct: pacingMetrics.timeElapsedPct,
+          recentDailySpend: pacingMetrics.recentAvgSpend,
+          projectedEndDate: formatDateShort(pacingMetrics.projectedEndDate),
+          daysVariance: pacingMetrics.daysVariance,
+          hasSpendThreshold: selectedCampaign?.offers?.some(o => o.isSpendThreshold)
+        };
+      } else if (analysisType === 'conversion' && conversionMetrics) {
+        campaignData = {
+          ...campaignData,
+          audience: conversionMetrics.totals.audience,
+          buyers: conversionMetrics.totals.buyers,
+          redeemers: conversionMetrics.totals.redeemers,
+          completionRate: conversionMetrics.totals.avgCompletionRate,
+          buyerValuePerTrip: conversionMetrics.totals.buyerValuePerTrip,
+          redeemerValuePerTrip: conversionMetrics.totals.redeemerValuePerTrip,
+          unitsPerBuyer: conversionMetrics.totals.unitsPerBuyer,
+          unitsPerRedeemer: conversionMetrics.totals.unitsPerRedeemer,
+          offers: selectedCampaign?.offers?.map(o => ({
+            tactic: o['Tactic'],
+            completionRate: o.completionRate,
+            roas: o.roasNum
+          }))
+        };
+      } else if (analysisType === 'promo' && promoAnalysis) {
+        campaignData = {
+          ...campaignData,
+          promoType: promoType === 'pops' ? 'Pops' : 'Fetch Topia',
+          pre: promoAnalysis.pre,
+          during: promoAnalysis.during,
+          post: promoAnalysis.post
+        };
+      }
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignData, analysisType })
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        setAiError(data.error);
+      } else {
+        setAiInsight(data.analysis);
+      }
+    } catch (err) {
+      setAiError('Failed to get AI analysis. Make sure ANTHROPIC_API_KEY is set in Vercel.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+  
+  // AI Insights state
+  const [aiInsight, setAiInsight] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+
+  // AI Insights state
+  const [aiInsight, setAiInsight] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+
+  // Fetch AI analysis
+  const fetchAIInsight = useCallback(async (analysisType) => {
+    if (!selectedCampaign) return;
+    
+    setAiLoading(true);
+    setAiError('');
+    setAiInsight('');
+
+    let campaignData = {
+      campaignName: selectedCampaign.campaignName,
+      dateRange: `${dateRange.start} to ${dateRange.end}`,
+    };
+
+    if (analysisType === 'overview') {
+      campaignData = {
+        ...campaignData,
+        sales: metrics.current.sales,
+        cost: metrics.current.cost,
+        roas: metrics.current.roas,
+        units: metrics.current.units,
+        buyers: metrics.current.buyers,
+        cac: metrics.current.cac,
+        costPerUnit: metrics.current.costPerUnit,
+        offers: selectedCampaign.offers.map(o => ({
+          tactic: o['Tactic'],
+          roas: o.roasNum,
+          buyers: o.buyersNum,
+          completionRate: o.completionRate
+        }))
+      };
+    } else if (analysisType === 'pacing' && pacingMetrics) {
+      campaignData = {
+        ...campaignData,
+        budget: pacingMetrics.totalBudget,
+        spent: pacingMetrics.totalSpent,
+        budgetConsumedPct: pacingMetrics.budgetConsumedPct,
+        daysElapsed: pacingMetrics.daysElapsed,
+        totalDays: pacingMetrics.totalCampaignDays,
+        timeElapsedPct: pacingMetrics.timeElapsedPct,
+        recentDailySpend: pacingMetrics.recentAvgSpend,
+        projectedEndDate: formatDateShort(pacingMetrics.projectedEndDate),
+        daysVariance: pacingMetrics.daysVariance,
+        hasSpendThreshold: selectedCampaign.offers.some(o => o.isSpendThreshold)
+      };
+    } else if (analysisType === 'conversion' && conversionMetrics) {
+      campaignData = {
+        ...campaignData,
+        audience: conversionMetrics.totals.audience,
+        buyers: conversionMetrics.totals.buyers,
+        redeemers: conversionMetrics.totals.redeemers,
+        completionRate: conversionMetrics.totals.avgCompletionRate,
+        buyerValuePerTrip: conversionMetrics.totals.buyerValuePerTrip,
+        redeemerValuePerTrip: conversionMetrics.totals.redeemerValuePerTrip,
+        unitsPerBuyer: conversionMetrics.totals.unitsPerBuyer,
+        unitsPerRedeemer: conversionMetrics.totals.unitsPerRedeemer,
+        offers: conversionMetrics.offers.map(o => ({
+          tactic: o['Tactic'],
+          completionRate: o.completionRate,
+          roas: o.roasNum
+        }))
+      };
+    } else if (analysisType === 'promo' && promoAnalysis) {
+      campaignData = {
+        ...campaignData,
+        promoType: promoType === 'pops' ? 'Pops' : 'Fetch Topia',
+        pre: promoAnalysis.pre,
+        during: promoAnalysis.during,
+        post: promoAnalysis.post
+      };
+    }
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignData, analysisType })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        setAiError(data.error || 'Failed to get AI analysis');
+      } else {
+        setAiInsight(data.analysis);
+      }
+    } catch (err) {
+      setAiError('Failed to connect to AI service');
+    } finally {
+      setAiLoading(false);
+    }
+  }, [selectedCampaign, dateRange, metrics, pacingMetrics, conversionMetrics, promoAnalysis, promoType]);
 
   const handleFileUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
@@ -868,12 +1117,11 @@ export default function FetchDashboard() {
                 { id: 'pacing', label: 'Pacing & Upsell', icon: Rocket },
                 { id: 'promo', label: 'Promo Analysis', icon: Sparkles },
                 { id: 'conversion', label: 'Conversion', icon: Filter },
-                { id: 'offers', label: 'Offer Deep Dive', icon: Target },
-                { id: 'docs', label: 'Documentation', icon: BookOpen }
+                { id: 'offers', label: 'Offer Deep Dive', icon: Target }
               ].map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => { setActiveTab(tab.id); setAiInsight(''); setAiError(''); }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
                 >
                   <tab.icon size={18} />
@@ -885,6 +1133,15 @@ export default function FetchDashboard() {
             {/* OVERVIEW TAB */}
             {activeTab === 'overview' && (
               <>
+                {/* AI Insights */}
+                <AIInsightPanel 
+                  insight={aiInsight} 
+                  loading={aiLoading} 
+                  error={aiError} 
+                  onGenerate={getAIInsight}
+                  analysisType="overview"
+                />
+                
                 {/* CAC Info Callout */}
                 <CACInfoCallout hasAcquisitionOffers={offerTypeFlags.hasAcquisition} hasBrandBuyerOffers={offerTypeFlags.hasBrandBuyer} />
                 
@@ -999,6 +1256,15 @@ export default function FetchDashboard() {
             {/* PACING TAB */}
             {activeTab === 'pacing' && pacingMetrics && (
               <>
+                {/* AI Insights */}
+                <AIInsightPanel 
+                  insight={aiInsight} 
+                  loading={aiLoading} 
+                  error={aiError} 
+                  onGenerate={getAIInsight}
+                  analysisType="pacing"
+                />
+                
                 <SpendThresholdWarning offers={selectedCampaign.offers} />
                 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
@@ -1154,6 +1420,15 @@ export default function FetchDashboard() {
 
                 {promoAnalysis ? (
                   <>
+                    {/* AI Insights for Promo */}
+                    <AIInsightPanel 
+                      insight={aiInsight} 
+                      loading={aiLoading} 
+                      error={aiError} 
+                      onGenerate={getAIInsight}
+                      analysisType="promo"
+                    />
+                    
                     {/* Period Comparison Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       <PromoPeriodCard title="Pre-Promo" icon={ArrowLeftRight} color="slate" data={promoAnalysis.pre} isBaseline={true} />
@@ -1240,6 +1515,15 @@ export default function FetchDashboard() {
             {/* CONVERSION TAB */}
             {activeTab === 'conversion' && conversionMetrics && (
               <>
+                {/* AI Insights */}
+                <AIInsightPanel 
+                  insight={aiInsight} 
+                  loading={aiLoading} 
+                  error={aiError} 
+                  onGenerate={getAIInsight}
+                  analysisType="conversion"
+                />
+                
                 {insights.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     {insights.map((insight, i) => <InsightCard key={i} {...insight} />)}
@@ -1411,260 +1695,6 @@ export default function FetchDashboard() {
                   </div>
                 )}
               </>
-            )}
-
-            {/* DOCUMENTATION TAB */}
-            {activeTab === 'docs' && (
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
-                  <div className="flex items-center gap-3 mb-3">
-                    <BookOpen size={32} />
-                    <h2 className="text-3xl font-bold">How Calculations Work</h2>
-                  </div>
-                  <p className="text-blue-100 text-lg">All calculations run client-side in your browser. Your data never leaves your computer.</p>
-                </div>
-
-                {/* Core Metrics */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <Calculator className="text-blue-600" size={24} />
-                    Core Metrics
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold text-slate-700 mb-3">Performance Metrics</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">ROAS</span><code className="text-blue-600">Sales ÷ Cost</code></div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">CAC</span><code className="text-blue-600">Cost ÷ Buyers</code></div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">Cost Per Unit</span><code className="text-blue-600">Cost ÷ Units</code></div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">Sales Per Buyer</span><code className="text-blue-600">Sales ÷ Buyers</code></div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">Units Per Buyer</span><code className="text-blue-600">Units ÷ Buyers</code></div>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-slate-700 mb-3">Conversion Metrics</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">Completion Rate</span><code className="text-blue-600">(Redeemers ÷ Buyers) × 100</code></div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">Engagement Rate</span><code className="text-blue-600">(Buyers ÷ Audience) × 100</code></div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">Trips Per Buyer</span><code className="text-blue-600">Trips ÷ Buyers</code></div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded"><span className="font-medium">Value Per Trip</span><code className="text-blue-600">Sales ÷ Trips</code></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pacing Calculations */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <Rocket className="text-amber-600" size={24} />
-                    Pacing & Budget Tracking
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-slate-50 rounded-lg">
-                        <h4 className="font-semibold text-slate-700 mb-2">Time & Budget</h4>
-                        <div className="space-y-1 text-sm text-slate-600">
-                          <div>Total Spent = Sum of daily costs</div>
-                          <div>Remaining Budget = Budget - Spent</div>
-                          <div>Days Elapsed = Today - Start Date</div>
-                          <div>Days Remaining = End - Today</div>
-                        </div>
-                      </div>
-                      <div className="p-4 bg-slate-50 rounded-lg">
-                        <h4 className="font-semibold text-slate-700 mb-2">Projections</h4>
-                        <div className="space-y-1 text-sm text-slate-600">
-                          <div>Avg Daily Spend = Spent ÷ Days Elapsed</div>
-                          <div>Recent Avg = Last 14 days ÷ 14</div>
-                          <div>Days Until Exhausted = Remaining ÷ Avg</div>
-                          <div>Projected End = Today + Days Until Exhausted</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-2">Pacing Status</h4>
-                      <div className="space-y-1 text-sm text-blue-700">
-                        <div>🚀 <strong>Ending Early:</strong> Days Variance &lt; -7 days</div>
-                        <div>⏸️ <strong>Under Pacing:</strong> Days Variance &gt; 14 days</div>
-                        <div>✅ <strong>On Track:</strong> Within ±7-14 day range</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Promo Analysis */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <Sparkles className="text-purple-600" size={24} />
-                    Promo Analysis (Pops / Fetch Topia)
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                      <h4 className="font-semibold text-purple-800 mb-2">Time Periods</h4>
-                      <div className="space-y-1 text-sm text-purple-700">
-                        <div><strong>Pre Period:</strong> Same # of days BEFORE promo starts</div>
-                        <div><strong>Promo Period:</strong> User-selected start/end dates</div>
-                        <div><strong>Post Period:</strong> Same # of days AFTER promo ends</div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-slate-50 rounded-lg">
-                      <h4 className="font-semibold text-slate-700 mb-2">Lift Calculations</h4>
-                      <div className="space-y-1 text-sm text-slate-600">
-                        <div>Sales Lift % = ((During - Pre) ÷ Pre) × 100</div>
-                        <div>Units Lift % = ((During - Pre) ÷ Pre) × 100</div>
-                        <div>Buyer Lift % = ((During - Pre) ÷ Pre) × 100</div>
-                      </div>
-                      <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded text-sm text-emerald-700">
-                        <strong>Example:</strong> Pre-period sales = $10K, During-promo = $15K → <strong>Sales Lift = +50%</strong>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Conversion Funnel */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <Filter className="text-emerald-600" size={24} />
-                    Conversion Funnel
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl mb-2">👥</div>
-                        <div className="font-semibold text-slate-700">Audience</div>
-                        <div className="text-xs text-slate-500 mt-1">Total addressable users</div>
-                      </div>
-                      <div className="p-4 bg-purple-50 rounded-lg">
-                        <div className="text-3xl mb-2">🛒</div>
-                        <div className="font-semibold text-slate-700">Buyers</div>
-                        <div className="text-xs text-slate-500 mt-1">Made qualifying purchases</div>
-                      </div>
-                      <div className="p-4 bg-emerald-50 rounded-lg">
-                        <div className="text-3xl mb-2">✅</div>
-                        <div className="font-semibold text-slate-700">Redeemers</div>
-                        <div className="text-xs text-slate-500 mt-1">Completed the offer</div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-slate-50 rounded-lg">
-                      <h4 className="font-semibold text-slate-700 mb-2">Calculations</h4>
-                      <div className="space-y-1 text-sm text-slate-600">
-                        <div>Drop-off % = ((Current - Next) ÷ Current) × 100</div>
-                        <div>Completion Rate = (Redeemers ÷ Buyers) × 100</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CAC Context */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <Users className="text-rose-600" size={24} />
-                    CAC Context & Segmentation
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg">
-                      <h4 className="font-semibold text-rose-800 mb-2">Acquisition Tactics (CAC applies)</h4>
-                      <div className="space-y-1 text-sm text-rose-700">
-                        <div>✓ New Category Entrant (NCE)</div>
-                        <div>✓ Competitive Targeting</div>
-                        <div>✓ Conquest campaigns</div>
-                      </div>
-                      <div className="mt-3 text-sm text-rose-600"><strong>Formula:</strong> Cost ÷ New Buyers</div>
-                    </div>
-                    <div className="p-4 bg-slate-100 border border-slate-200 rounded-lg">
-                      <h4 className="font-semibold text-slate-700 mb-2">Brand Buyer Tactics (CAC N/A)</h4>
-                      <div className="space-y-1 text-sm text-slate-600">
-                        <div>• Loyalist retention</div>
-                        <div>• Lapsed buyer reactivation</div>
-                        <div>• Brand buyer engagement</div>
-                      </div>
-                      <div className="mt-3 text-sm text-slate-600"><strong>Focus on:</strong> ROAS & Sales Lift instead</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Extension Calculator */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <CalendarPlus className="text-indigo-600" size={24} />
-                    Extension Calculator
-                  </h3>
-                  <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <div className="space-y-2 text-sm text-indigo-700">
-                      <div>Extension Days Conversion:</div>
-                      <div className="ml-4">• Weeks → Days × 7</div>
-                      <div className="ml-4">• Months → Days × 30</div>
-                      <div className="mt-3"><strong>Extension Cost</strong> = Recent Avg Spend × Extension Days</div>
-                      <div><strong>New End Date</strong> = Current End + Extension Days</div>
-                    </div>
-                    <div className="mt-4 p-3 bg-white rounded text-sm">
-                      <strong className="text-indigo-800">Example:</strong>
-                      <div className="text-slate-600 mt-1">Extending 2 weeks @ $500/day avg = <strong className="text-indigo-600">$7,000</strong> additional budget needed</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Data Privacy */}
-                <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 border-2 border-emerald-200 rounded-2xl p-6">
-                  <h3 className="text-xl font-bold text-emerald-800 mb-3 flex items-center gap-2">
-                    <CheckCircle className="text-emerald-600" size={24} />
-                    Data Privacy & Security
-                  </h3>
-                  <div className="space-y-2 text-emerald-700">
-                    <div>✅ All calculations run client-side in your browser</div>
-                    <div>✅ No data uploaded to servers</div>
-                    <div>✅ No external API calls for calculations</div>
-                    <div>✅ CSV data stays in browser memory</div>
-                    <div>✅ Data cleared when you close the tab</div>
-                  </div>
-                </div>
-
-                {/* Pro Tips */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <Zap className="text-amber-500" size={24} />
-                    Pro Tips for Best Results
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2 text-sm text-slate-600">
-                      <div>✅ Use date filters to isolate events (Pops, Fetch Topia)</div>
-                      <div>✅ Compare pre/during/post periods for lift analysis</div>
-                      <div>✅ Check pacing weekly to catch under/overspending early</div>
-                    </div>
-                    <div className="space-y-2 text-sm text-slate-600">
-                      <div>✅ Focus on ROAS + Sales Lift for brand buyer offers</div>
-                      <div>✅ Focus on CAC for acquisition offers (NCE, Competitive)</div>
-                      <div>✅ Allow 4-6 weeks ramp-up for spend threshold offers</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* FAQs */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <AlertCircle className="text-blue-600" size={24} />
-                    Frequently Asked Questions
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="p-4 border-l-4 border-blue-500 bg-blue-50">
-                      <h4 className="font-semibold text-blue-800 mb-1">Why is my CAC showing "N/A" for some offers?</h4>
-                      <p className="text-sm text-blue-700">CAC is only calculated for acquisition segments (NCE, Competitive). Brand Buyer offers show "N/A" because these customers already purchase your brand.</p>
-                    </div>
-                    <div className="p-4 border-l-4 border-purple-500 bg-purple-50">
-                      <h4 className="font-semibold text-purple-800 mb-1">How is "Recent Avg Spend" calculated?</h4>
-                      <p className="text-sm text-purple-700">Last 14 days of spend ÷ 14. This gives a more current picture than overall average, especially if pacing has changed mid-campaign.</p>
-                    </div>
-                    <div className="p-4 border-l-4 border-emerald-500 bg-emerald-50">
-                      <h4 className="font-semibold text-emerald-800 mb-1">What's the difference between Buyers and Redeemers?</h4>
-                      <p className="text-sm text-emerald-700"><strong>Buyers</strong> = users who made qualifying purchases. <strong>Redeemers</strong> = users who completed the full offer requirements.</p>
-                    </div>
-                    <div className="p-4 border-l-4 border-amber-500 bg-amber-50">
-                      <h4 className="font-semibold text-amber-800 mb-1">How accurate are spend projections?</h4>
-                      <p className="text-sm text-amber-700">Projections use historical avg daily spend. Accuracy improves after 2-3 weeks of data. Spend threshold offers may show slow early pacing—wait 4-6 weeks for accurate reads.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             )}
           </>
         ) : (
