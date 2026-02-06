@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, ScatterChart, Scatter, Cell, ReferenceLine, AreaChart } from 'recharts';
-import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, Wand2, Loader2, MessageSquare } from 'lucide-react';
+import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, Wand2, Loader2, MessageSquare, Send, Bot, User } from 'lucide-react';
 
 // Parse the Fetch Rewards CSV format
 const parseCSV = (text, fileName) => {
@@ -499,55 +499,190 @@ const InsightCard = ({ type, title, description, metric, icon: Icon }) => {
   );
 };
 
-// AI Insight Panel Component
-const AIInsightPanel = ({ insight, loading, error, onGenerate, analysisType }) => {
+// AI Chat Panel Component with conversation support
+const AIChatPanel = ({ campaignData, analysisType }) => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const messagesEndRef = React.useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const sendMessage = async (customPrompt = null) => {
+    const question = customPrompt || input.trim();
+    if (!question && messages.length > 0) return;
+
+    setLoading(true);
+    setError('');
+
+    // Add user message to chat (unless it's the initial analysis)
+    if (!customPrompt) {
+      setMessages(prev => [...prev, { role: 'user', content: question }]);
+      setInput('');
+    }
+
+    try {
+      // Build chat history for API
+      const chatHistory = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignData: { ...campaignData, question },
+          analysisType: customPrompt ? analysisType : 'chat',
+          chatHistory: customPrompt ? [] : chatHistory
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.analysis }]);
+      }
+    } catch (err) {
+      setError('Failed to connect. Check GROQ_API_KEY in Vercel settings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setError('');
+  };
+
+  const suggestedQuestions = [
+    "What's the #1 thing I should tell the client?",
+    "How can we improve ROAS?",
+    "Should we extend this campaign?",
+    "Compare the offer segments for me",
+    "What upsell opportunity exists here?"
+  ];
+
   return (
     <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border border-violet-200 p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Wand2 className="text-violet-600" size={20} />
-          <h3 className="font-semibold text-violet-800">AI Campaign Insights</h3>
+          <Bot className="text-violet-600" size={20} />
+          <h3 className="font-semibold text-violet-800">AI Campaign Assistant</h3>
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free • Llama 3.1</span>
         </div>
-        <button
-          onClick={() => onGenerate(analysisType)}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <Wand2 size={16} />
-              Generate Insights
-            </>
+        <div className="flex gap-2">
+          {messages.length > 0 && (
+            <button
+              onClick={clearChat}
+              className="text-sm text-violet-600 hover:text-violet-800 px-3 py-1 rounded-lg hover:bg-violet-100"
+            >
+              Clear Chat
+            </button>
           )}
-        </button>
+          {messages.length === 0 && (
+            <button
+              onClick={() => sendMessage(`Analyze this ${analysisType} data and give me key insights.`)}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 transition-colors"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
+              Generate Insights
+            </button>
+          )}
+        </div>
       </div>
-      
+
       {error && (
-        <div className="bg-rose-100 border border-rose-200 rounded-lg p-4 text-rose-700 text-sm">
+        <div className="bg-rose-100 border border-rose-200 rounded-lg p-4 text-rose-700 text-sm mb-4">
           {error}
         </div>
       )}
-      
-      {insight && !loading && (
-        <div className="bg-white rounded-xl p-4 border border-violet-100">
-          <div className="flex items-start gap-3">
-            <MessageSquare className="text-violet-500 mt-1 flex-shrink-0" size={18} />
-            <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
-              {insight}
+
+      {/* Messages */}
+      {messages.length > 0 && (
+        <div className="bg-white rounded-xl border border-violet-100 mb-4 max-h-96 overflow-y-auto">
+          {messages.map((msg, i) => (
+            <div key={i} className={`p-4 ${i > 0 ? 'border-t border-violet-50' : ''} ${msg.role === 'user' ? 'bg-slate-50' : ''}`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-slate-200' : 'bg-violet-100'}`}>
+                  {msg.role === 'user' ? <User size={14} className="text-slate-600" /> : <Bot size={14} className="text-violet-600" />}
+                </div>
+                <div className="flex-1 text-sm text-slate-700 whitespace-pre-wrap">{msg.content}</div>
+              </div>
             </div>
+          ))}
+          {loading && (
+            <div className="p-4 border-t border-violet-50">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center">
+                  <Loader2 size={14} className="text-violet-600 animate-spin" />
+                </div>
+                <span className="text-sm text-slate-500">Thinking...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
+
+      {/* Suggested Questions (only show if no messages) */}
+      {messages.length === 0 && !loading && (
+        <div className="mb-4">
+          <p className="text-xs text-violet-600 mb-2">Quick questions:</p>
+          <div className="flex flex-wrap gap-2">
+            {suggestedQuestions.map((q, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  setMessages([{ role: 'user', content: q }]);
+                  sendMessage(q);
+                }}
+                className="text-xs px-3 py-1.5 bg-white border border-violet-200 rounded-full text-violet-700 hover:bg-violet-50 transition-colors"
+              >
+                {q}
+              </button>
+            ))}
           </div>
         </div>
       )}
-      
-      {!insight && !loading && !error && (
-        <p className="text-sm text-violet-600">
-          Click "Generate Insights" to get an AI-powered analysis of your campaign data.
-        </p>
+
+      {/* Input */}
+      {messages.length > 0 && (
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask a follow-up question..."
+            disabled={loading}
+            className="flex-1 px-4 py-2 border border-violet-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50"
+          />
+          <button
+            onClick={() => sendMessage()}
+            disabled={loading || !input.trim()}
+            className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 transition-colors"
+          >
+            <Send size={16} />
+          </button>
+        </div>
       )}
     </div>
   );
@@ -575,99 +710,6 @@ export default function FetchDashboard() {
   const [promoType, setPromoType] = useState('pops');
   const [promoStart, setPromoStart] = useState('');
   const [promoEnd, setPromoEnd] = useState('');
-
-  // AI Insights state
-  const [aiInsight, setAiInsight] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState('');
-
-  // AI Analysis function
-  const getAIInsight = async (analysisType) => {
-    setAiLoading(true);
-    setAiError('');
-    setAiInsight('');
-
-    try {
-      let campaignData = { campaignName: selectedCampaign?.campaignName };
-
-      if (analysisType === 'overview') {
-        campaignData = {
-          ...campaignData,
-          dateRange: `${dateRange.start} to ${dateRange.end}`,
-          sales: metrics.current.sales,
-          cost: metrics.current.cost,
-          roas: metrics.current.roas,
-          units: metrics.current.units,
-          buyers: metrics.current.buyers,
-          cac: metrics.current.cac,
-          costPerUnit: metrics.current.costPerUnit,
-          offers: selectedCampaign?.offers?.map(o => ({
-            tactic: o['Tactic'],
-            roas: o.roasNum,
-            buyers: o.buyersNum,
-            completionRate: o.completionRate
-          }))
-        };
-      } else if (analysisType === 'pacing' && pacingMetrics) {
-        campaignData = {
-          ...campaignData,
-          budget: pacingMetrics.totalBudget,
-          spent: pacingMetrics.totalSpent,
-          budgetConsumedPct: pacingMetrics.budgetConsumedPct,
-          daysElapsed: pacingMetrics.daysElapsed,
-          totalDays: pacingMetrics.totalCampaignDays,
-          timeElapsedPct: pacingMetrics.timeElapsedPct,
-          recentDailySpend: pacingMetrics.recentAvgSpend,
-          projectedEndDate: formatDateShort(pacingMetrics.projectedEndDate),
-          daysVariance: pacingMetrics.daysVariance,
-          hasSpendThreshold: selectedCampaign?.offers?.some(o => o.isSpendThreshold)
-        };
-      } else if (analysisType === 'conversion' && conversionMetrics) {
-        campaignData = {
-          ...campaignData,
-          audience: conversionMetrics.totals.audience,
-          buyers: conversionMetrics.totals.buyers,
-          redeemers: conversionMetrics.totals.redeemers,
-          completionRate: conversionMetrics.totals.avgCompletionRate,
-          buyerValuePerTrip: conversionMetrics.totals.buyerValuePerTrip,
-          redeemerValuePerTrip: conversionMetrics.totals.redeemerValuePerTrip,
-          unitsPerBuyer: conversionMetrics.totals.unitsPerBuyer,
-          unitsPerRedeemer: conversionMetrics.totals.unitsPerRedeemer,
-          offers: selectedCampaign?.offers?.map(o => ({
-            tactic: o['Tactic'],
-            completionRate: o.completionRate,
-            roas: o.roasNum
-          }))
-        };
-      } else if (analysisType === 'promo' && promoAnalysis) {
-        campaignData = {
-          ...campaignData,
-          promoType: promoType === 'pops' ? 'Pops' : 'Fetch Topia',
-          pre: promoAnalysis.pre,
-          during: promoAnalysis.during,
-          post: promoAnalysis.post
-        };
-      }
-
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaignData, analysisType })
-      });
-
-      const data = await response.json();
-      
-      if (data.error) {
-        setAiError(data.error);
-      } else {
-        setAiInsight(data.analysis);
-      }
-    } catch (err) {
-      setAiError('Failed to get AI analysis. Make sure ANTHROPIC_API_KEY is set in Vercel.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   const handleFileUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
@@ -1019,7 +1061,7 @@ export default function FetchDashboard() {
               ].map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => { setActiveTab(tab.id); setAiInsight(''); setAiError(''); }}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
                 >
                   <tab.icon size={18} />
@@ -1032,11 +1074,24 @@ export default function FetchDashboard() {
             {activeTab === 'overview' && (
               <>
                 {/* AI Insights */}
-                <AIInsightPanel 
-                  insight={aiInsight} 
-                  loading={aiLoading} 
-                  error={aiError} 
-                  onGenerate={getAIInsight}
+                <AIChatPanel 
+                  campaignData={{
+                    campaignName: selectedCampaign?.campaignName,
+                    dateRange: `${dateRange.start} to ${dateRange.end}`,
+                    sales: metrics.current.sales,
+                    cost: metrics.current.cost,
+                    roas: metrics.current.roas,
+                    units: metrics.current.units,
+                    buyers: metrics.current.buyers,
+                    cac: metrics.current.cac,
+                    costPerUnit: metrics.current.costPerUnit,
+                    offers: selectedCampaign?.offers?.map(o => ({
+                      tactic: o['Tactic'],
+                      roas: o.roasNum,
+                      buyers: o.buyersNum,
+                      completionRate: o.completionRate
+                    }))
+                  }}
                   analysisType="overview"
                 />
                 
@@ -1155,11 +1210,20 @@ export default function FetchDashboard() {
             {activeTab === 'pacing' && pacingMetrics && (
               <>
                 {/* AI Insights */}
-                <AIInsightPanel 
-                  insight={aiInsight} 
-                  loading={aiLoading} 
-                  error={aiError} 
-                  onGenerate={getAIInsight}
+                <AIChatPanel 
+                  campaignData={{
+                    campaignName: selectedCampaign?.campaignName,
+                    budget: pacingMetrics.totalBudget,
+                    spent: pacingMetrics.totalSpent,
+                    budgetConsumedPct: pacingMetrics.budgetConsumedPct,
+                    daysElapsed: pacingMetrics.daysElapsed,
+                    totalDays: pacingMetrics.totalCampaignDays,
+                    timeElapsedPct: pacingMetrics.timeElapsedPct,
+                    recentDailySpend: pacingMetrics.recentAvgSpend,
+                    projectedEndDate: formatDateShort(pacingMetrics.projectedEndDate),
+                    daysVariance: pacingMetrics.daysVariance,
+                    hasSpendThreshold: selectedCampaign?.offers?.some(o => o.isSpendThreshold)
+                  }}
                   analysisType="pacing"
                 />
                 
@@ -1319,11 +1383,14 @@ export default function FetchDashboard() {
                 {promoAnalysis ? (
                   <>
                     {/* AI Insights for Promo */}
-                    <AIInsightPanel 
-                      insight={aiInsight} 
-                      loading={aiLoading} 
-                      error={aiError} 
-                      onGenerate={getAIInsight}
+                    <AIChatPanel 
+                      campaignData={{
+                        campaignName: selectedCampaign?.campaignName,
+                        promoType: promoType === 'pops' ? 'Pops' : 'Fetch Topia',
+                        pre: promoAnalysis.pre,
+                        during: promoAnalysis.during,
+                        post: promoAnalysis.post
+                      }}
                       analysisType="promo"
                     />
                     
@@ -1414,11 +1481,23 @@ export default function FetchDashboard() {
             {activeTab === 'conversion' && conversionMetrics && (
               <>
                 {/* AI Insights */}
-                <AIInsightPanel 
-                  insight={aiInsight} 
-                  loading={aiLoading} 
-                  error={aiError} 
-                  onGenerate={getAIInsight}
+                <AIChatPanel 
+                  campaignData={{
+                    campaignName: selectedCampaign?.campaignName,
+                    audience: conversionMetrics.totals.audience,
+                    buyers: conversionMetrics.totals.buyers,
+                    redeemers: conversionMetrics.totals.redeemers,
+                    completionRate: conversionMetrics.totals.avgCompletionRate,
+                    buyerValuePerTrip: conversionMetrics.totals.buyerValuePerTrip,
+                    redeemerValuePerTrip: conversionMetrics.totals.redeemerValuePerTrip,
+                    unitsPerBuyer: conversionMetrics.totals.unitsPerBuyer,
+                    unitsPerRedeemer: conversionMetrics.totals.unitsPerRedeemer,
+                    offers: selectedCampaign?.offers?.map(o => ({
+                      tactic: o['Tactic'],
+                      completionRate: o.completionRate,
+                      roas: o.roasNum
+                    }))
+                  }}
                   analysisType="conversion"
                 />
                 
