@@ -1,4 +1,4 @@
-// Vercel Serverless Function - uses Groq (FREE Llama 3.1 70B)
+// Vercel Serverless Function - uses Google Gemini (FREE)
 // File: /api/analyze.js
 
 export const config = {
@@ -16,13 +16,13 @@ export default async function handler(req) {
   try {
     const { campaignData, analysisType, chatHistory } = await req.json();
 
-    // Try Groq first (free), fall back to Anthropic if available
-    const groqKey = process.env.GROQ_API_KEY;
+    // Try Gemini first (free), fall back to Anthropic if available
+    const geminiKey = process.env.GEMINI_API_KEY;
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     
-    if (!groqKey && !anthropicKey) {
+    if (!geminiKey && !anthropicKey) {
       return new Response(
-        JSON.stringify({ error: 'No API key configured. Add GROQ_API_KEY (free) to Vercel environment variables.' }), 
+        JSON.stringify({ error: 'No API key configured. Add GEMINI_API_KEY (free) to Vercel environment variables.' }), 
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -32,9 +32,9 @@ export default async function handler(req) {
 
     let aiResponse;
 
-    if (groqKey) {
-      // Use Groq (FREE - Llama 3.1 70B)
-      aiResponse = await callGroq(groqKey, systemPrompt, userPrompt, chatHistory);
+    if (geminiKey) {
+      // Use Gemini (FREE - Gemini 1.5 Flash)
+      aiResponse = await callGemini(geminiKey, systemPrompt, userPrompt, chatHistory);
     } else {
       // Fallback to Anthropic
       aiResponse = await callAnthropic(anthropicKey, systemPrompt, userPrompt);
@@ -54,40 +54,48 @@ export default async function handler(req) {
   }
 }
 
-async function callGroq(apiKey, systemPrompt, userPrompt, chatHistory = []) {
-  const messages = [
-    { role: 'system', content: systemPrompt }
-  ];
-
+async function callGemini(apiKey, systemPrompt, userPrompt, chatHistory = []) {
+  // Combine system prompt and user prompt for Gemini
+  let fullPrompt = `${systemPrompt}\n\n`;
+  
   // Add chat history if exists
   if (chatHistory && chatHistory.length > 0) {
-    messages.push(...chatHistory);
+    chatHistory.forEach(msg => {
+      fullPrompt += `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n\n`;
+    });
   }
+  
+  fullPrompt += `User: ${userPrompt}`;
 
-  messages.push({ role: 'user', content: userPrompt });
-
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages,
-      max_tokens: 1024,
-      temperature: 0.7,
-    }),
-  });
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: fullPrompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1024,
+        }
+      }),
+    }
+  );
 
   if (!response.ok) {
     const error = await response.text();
-    console.error('Groq API error:', error);
-    throw new Error('Failed to get AI analysis from Groq');
+    console.error('Gemini API error:', error);
+    throw new Error('Failed to get AI analysis from Gemini');
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+  return data.candidates[0].content.parts[0].text;
 }
 
 async function callAnthropic(apiKey, systemPrompt, userPrompt) {
