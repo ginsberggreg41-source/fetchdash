@@ -73,7 +73,7 @@ async function callGroq(apiKey, systemPrompt, userPrompt, chatHistory = []) {
       'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'llama-3.1-70b-versatile',
+      model: 'llama-3.3-70b-versatile',
       messages,
       max_tokens: 1024,
       temperature: 0.7,
