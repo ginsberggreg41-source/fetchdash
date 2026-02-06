@@ -89,10 +89,10 @@ async function callGemini(apiKey, systemPrompt, userPrompt, chatHistory = []) {
   );
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Gemini API error:', error);
-    throw new Error('Failed to get AI analysis from Gemini');
-  }
+  const errorText = await response.text();
+  console.error('Gemini API error:', errorText);
+  throw new Error(`Gemini failed (${response.status}): ${errorText}`);
+}
 
   const data = await response.json();
   return data.candidates[0].content.parts[0].text;
