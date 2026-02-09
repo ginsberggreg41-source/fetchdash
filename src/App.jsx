@@ -135,6 +135,7 @@ const parseCSV = (text, fileName) => {
           
           // CAC calculations
           offer.cac = offer.buyersNum > 0 ? offer.costNum / offer.buyersNum : 0;
+          offer.costPerUnit = offer.unitsNum > 0 ? offer.costNum / offer.unitsNum : 0;
           offer.costPerRedeemer = offer.redeemersNum > 0 ? offer.costNum / offer.redeemersNum : 0;
           
           offers.push(offer);
@@ -998,6 +999,10 @@ const ClientReport = ({ campaign, metrics, pacingMetrics, conversionMetrics, aiS
           <div className="text-xs text-purple-600 font-medium">Buyers</div>
           <div className="text-xl font-bold text-purple-800">{formatNumber(metrics.current.buyers)}</div>
         </div>
+        <div className="p-3 bg-orange-50 rounded-lg border border-orange-200 text-center">
+          <div className="text-xs text-orange-600 font-medium">Cost/Unit Moved</div>
+          <div className="text-xl font-bold text-orange-800">{formatCurrency(metrics.current.costPerUnit)}</div>
+        </div>
         <div className="p-3 bg-rose-50 rounded-lg border border-rose-200 text-center">
           <div className="text-xs text-rose-600 font-medium">CAC</div>
           <div className="text-xl font-bold text-rose-800">{formatCurrency(cac)}</div>
@@ -1349,14 +1354,16 @@ export default function FetchDashboard() {
       const comp = calc(comparisonData);
       comp.roas = comp.cost > 0 ? comp.sales / comp.cost : 0;
       comp.cac = comp.buyers > 0 ? comp.cost / comp.buyers : 0;
-      
+      comp.costPerUnit = comp.units > 0 ? comp.cost / comp.units : 0;
+
       changes = {
         sales: comp.sales > 0 ? ((current.sales - comp.sales) / comp.sales) * 100 : null,
         cost: comp.cost > 0 ? ((current.cost - comp.cost) / comp.cost) * 100 : null,
         units: comp.units > 0 ? ((current.units - comp.units) / comp.units) * 100 : null,
         buyers: comp.buyers > 0 ? ((current.buyers - comp.buyers) / comp.buyers) * 100 : null,
         roas: comp.roas > 0 ? ((current.roas - comp.roas) / comp.roas) * 100 : null,
-        cac: comp.cac > 0 ? ((current.cac - comp.cac) / comp.cac) * 100 : null
+        cac: comp.cac > 0 ? ((current.cac - comp.cac) / comp.cac) * 100 : null,
+        costPerUnit: comp.costPerUnit > 0 ? ((current.costPerUnit - comp.costPerUnit) / comp.costPerUnit) * 100 : null
       };
     }
     
@@ -1699,12 +1706,13 @@ export default function FetchDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
                   <MetricCard title="Total Sales" value={metrics.current.sales} change={metrics.changes.sales} icon={DollarSign} format="currency" color="blue" />
                   <MetricCard title="Total Spend" value={metrics.current.cost} change={metrics.changes.cost} icon={Target} format="currency" color="amber" />
                   <MetricCard title="Units Moved" value={metrics.current.units} change={metrics.changes.units} icon={ShoppingCart} format="number" color="green" />
                   <MetricCard title="Buyers" value={metrics.current.buyers} change={metrics.changes.buyers} icon={Users} format="number" color="purple" />
                   <MetricCard title="ROAS" value={metrics.current.roas} change={metrics.changes.roas} icon={TrendingUp} format="roas" color="cyan" />
+                  <MetricCard title="Cost/Unit Moved" value={metrics.current.costPerUnit} change={metrics.changes.costPerUnit} icon={ShoppingCart} format="currency" color="orange" />
                   <MetricCard title="Cost/Buyer" value={metrics.current.cac} change={metrics.changes.cac} icon={Users} format="currency" color="slate" subtitle="See CAC note above" muted={!offerTypeFlags.hasAcquisition} />
                 </div>
 
@@ -1760,6 +1768,7 @@ export default function FetchDashboard() {
                             <th className="text-right p-3 font-medium text-slate-400">Units</th>
                             <th className="text-right p-3 font-medium text-slate-400">Buyers</th>
                             <th className="text-right p-3 font-medium text-slate-400">ROAS</th>
+                            <th className="text-right p-3 font-medium text-slate-400">Cost/Unit</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1771,6 +1780,7 @@ export default function FetchDashboard() {
                               <td className="p-3 text-right text-slate-300">{formatNumber(row.units)}</td>
                               <td className="p-3 text-right text-slate-300">{formatNumber(row.buyers)}</td>
                               <td className="p-3 text-right font-semibold text-blue-400">{row.roas.toFixed(2)}x</td>
+                              <td className="p-3 text-right text-orange-400">{formatCurrency(row.costPerUnit)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -2237,6 +2247,7 @@ export default function FetchDashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                       <MetricCard title="Completion Rate" value={selectedOffer.completionRate} icon={CheckCircle} format="percent" color="green" subtitle={`${formatNumber(selectedOffer.redeemersNum)} redeemers`} />
                       <MetricCard title="Sales Lift" value={selectedOffer.salesLiftNum} icon={Zap} format="percent" color="purple" />
+                      <MetricCard title="Cost/Unit Moved" value={selectedOffer.costPerUnit} icon={ShoppingCart} format="currency" color="orange" subtitle="Spend per unit sold" />
                       {selectedOffer.isAcquisitionTactic && (
                         <MetricCard title="Audience" value={selectedOffer.audienceNum} icon={Users} format="number" color="blue" subtitle="Total targeted" />
                       )}
