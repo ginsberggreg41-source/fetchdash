@@ -553,7 +553,7 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
         setMessages(prev => [...prev, { role: 'assistant', content: data.analysis }]);
       }
     } catch (err) {
-      setError('Failed to connect. Check GROQ_API_KEY in Vercel settings.');
+      setError('Failed to connect. Check ANTHROPIC_API_KEY in Vercel settings.');
     } finally {
       setLoading(false);
     }
@@ -585,7 +585,7 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
         <div className="flex items-center gap-2">
           <Bot className="text-violet-600" size={20} />
           <h3 className="font-semibold text-violet-800">AI Campaign Assistant</h3>
-          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free • Llama 3.1</span>
+          <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Claude Haiku</span>
         </div>
         <div className="flex gap-2">
           {messages.length > 0 && (
