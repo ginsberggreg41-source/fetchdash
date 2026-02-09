@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, ScatterChart, Scatter, Cell, ReferenceLine, AreaChart } from 'recharts';
-import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, Wand2, Loader2, MessageSquare, Send, Bot, User } from 'lucide-react';
+import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, Wand2, Loader2, MessageSquare, Send, Bot, User, Copy, FileText } from 'lucide-react';
 
 // Parse the Fetch Rewards CSV format
 const parseCSV = (text, fileName) => {
@@ -98,23 +98,40 @@ const parseCSV = (text, fileName) => {
           // Detect tactic type for CAC relevance
           const tactic = (offer['Tactic'] || '').toLowerCase();
           const offerName = (offer['Offer Name'] || '').toLowerCase();
-          
-          offer.isAcquisitionTactic = 
-            tactic.includes('new category') || 
-            tactic.includes('nce') || 
-            tactic.includes('competitive') || 
-            tactic.includes('comp buyer') ||
-            tactic.includes('conquest') ||
-            offerName.includes('nce') ||
-            offerName.includes('comp buyer') ||
-            offerName.includes('competitive');
-          
-          offer.isBrandBuyerTactic = 
-            tactic.includes('brand buyer') || 
-            tactic.includes('loyalist') || 
-            tactic.includes('lapsed') ||
-            tactic.includes('retention') ||
-            offerName.includes('brand buyer');
+          const subBanner = (offer['Sub Banner'] || '').toLowerCase();
+          const combinedText = `${tactic} ${offerName} ${subBanner}`;
+
+          // NCE detection with word boundary to avoid false positives ("fence", "dance", etc.)
+          const hasNCE = /\bnce\b/i.test(combinedText) || /\bn\.c\.e\./i.test(combinedText);
+
+          offer.isAcquisitionTactic =
+            hasNCE ||
+            combinedText.includes('new category') ||
+            combinedText.includes('competitive') ||
+            combinedText.includes('comp buyer') ||
+            combinedText.includes('conquest') ||
+            combinedText.includes('new buyer') ||
+            combinedText.includes('new to brand') ||
+            /\bntb\b/i.test(combinedText) ||
+            combinedText.includes('switcher') ||
+            combinedText.includes('win-back') ||
+            combinedText.includes('new customer');
+
+          offer.isBrandBuyerTactic =
+            combinedText.includes('brand buyer') ||
+            combinedText.includes('loyalist') ||
+            combinedText.includes('brand loyalist') ||
+            combinedText.includes('lapsed') ||
+            combinedText.includes('retention') ||
+            combinedText.includes('existing buyer') ||
+            combinedText.includes('existing customer') ||
+            combinedText.includes('repeat buyer') ||
+            /\bloyal\b/i.test(combinedText);
+
+          // Fallback: spend threshold offers with no detected segment are typically brand buyer
+          if (!offer.isAcquisitionTactic && !offer.isBrandBuyerTactic && offer.isSpendThreshold) {
+            offer.isBrandBuyerTactic = true;
+          }
           
           // CAC calculations
           offer.cac = offer.buyersNum > 0 ? offer.costNum / offer.buyersNum : 0;
@@ -505,15 +522,17 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const messagesEndRef = React.useRef(null);
+  const messagesContainerRef = React.useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   React.useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, loading]);
 
   const sendMessage = async (customPrompt = null) => {
     const question = customPrompt || input.trim();
@@ -617,7 +636,7 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
 
       {/* Messages */}
       {messages.length > 0 && (
-        <div className="bg-white rounded-xl border border-violet-100 mb-4 max-h-96 overflow-y-auto">
+        <div ref={messagesContainerRef} className="bg-white rounded-xl border border-violet-100 mb-4 max-h-96 overflow-y-auto">
           {messages.map((msg, i) => (
             <div key={i} className={`p-4 ${i > 0 ? 'border-t border-violet-50' : ''} ${msg.role === 'user' ? 'bg-slate-50' : ''}`}>
               <div className="flex items-start gap-3">
@@ -638,7 +657,7 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
+          <div />
         </div>
       )}
 
@@ -682,6 +701,114 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
           >
             <Send size={16} />
           </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Campaign Recap Generator
+const RECAP_OBJECTIVES = [
+  { id: 'roas', label: 'ROAS / Efficiency', icon: TrendingUp, color: 'emerald' },
+  { id: 'acquisition', label: 'Acquisition / Growth', icon: Users, color: 'blue' },
+  { id: 'retention', label: 'Retention / Loyalty', icon: Star, color: 'purple' },
+  { id: 'awareness', label: 'Awareness / Reach', icon: Target, color: 'amber' },
+];
+
+const RecapGenerator = ({ campaignData, offers }) => {
+  const [selectedObjective, setSelectedObjective] = useState(null);
+  const [recap, setRecap] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const generateRecap = async (objective) => {
+    setSelectedObjective(objective);
+    setLoading(true);
+    setError('');
+    setRecap('');
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignData: { ...campaignData, objective: objective.id },
+          analysisType: 'recap',
+          chatHistory: []
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setRecap(data.analysis);
+      }
+    } catch (err) {
+      setError('Failed to generate recap.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(recap);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl border border-slate-200 p-6 mb-6">
+      <div className="flex items-center gap-2 mb-1">
+        <FileText className="text-slate-700" size={20} />
+        <h3 className="font-semibold text-slate-800">Campaign Recap for Client</h3>
+      </div>
+      <p className="text-sm text-slate-500 mb-4">Select the campaign objective to generate a recap paragraph tailored to your client's goals.</p>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        {RECAP_OBJECTIVES.map(obj => (
+          <button
+            key={obj.id}
+            onClick={() => generateRecap(obj)}
+            disabled={loading}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
+              selectedObjective?.id === obj.id
+                ? `bg-${obj.color}-100 border-${obj.color}-300 text-${obj.color}-800`
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+            } disabled:opacity-50`}
+          >
+            <obj.icon size={16} />
+            {obj.label}
+          </button>
+        ))}
+      </div>
+
+      {loading && (
+        <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200">
+          <Loader2 size={16} className="animate-spin text-slate-500" />
+          <span className="text-sm text-slate-500">Generating recap for {selectedObjective?.label}...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-rose-700 text-sm">{error}</div>
+      )}
+
+      {recap && !loading && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+              {selectedObjective?.label} Recap
+            </span>
+            <button
+              onClick={copyToClipboard}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            >
+              {copied ? <><CheckCircle size={12} className="text-emerald-600" /> Copied</> : <><Copy size={12} /> Copy</>}
+            </button>
+          </div>
+          <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{recap}</div>
         </div>
       )}
     </div>
@@ -899,7 +1026,7 @@ export default function FetchDashboard() {
     const projectedEndDate = new Date(today.getTime() + (daysUntilBudgetExhausted * 24 * 60 * 60 * 1000));
     const daysVariance = daysBetween(projectedEndDate, targetEndDate);
     
-    const expectedSpendByNow = (daysElapsed / totalCampaignDays) * totalBudget;
+    const expectedSpendByNow = totalCampaignDays > 0 ? (daysElapsed / totalCampaignDays) * totalBudget : 0;
     const pacingRatio = expectedSpendByNow > 0 ? totalSpent / expectedSpendByNow : 1;
     
     let status = 'onTrack';
@@ -919,8 +1046,8 @@ export default function FetchDashboard() {
       overallAvgSpend, recentAvgSpend, projectedTotalSpend, projectedEndDate, daysUntilBudgetExhausted,
       daysVariance, pacingRatio, status, startDate, targetEndDate,
       extensionDaysCalc, extensionCost, newEndDate,
-      budgetConsumedPct: (totalSpent / totalBudget) * 100,
-      timeElapsedPct: (daysElapsed / totalCampaignDays) * 100
+      budgetConsumedPct: totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0,
+      timeElapsedPct: totalCampaignDays > 0 ? (daysElapsed / totalCampaignDays) * 100 : 0
     };
   }, [selectedCampaign, customEndDate, extensionDays, extensionType]);
 
@@ -1095,6 +1222,37 @@ export default function FetchDashboard() {
                   analysisType="overview"
                 />
                 
+                {/* Campaign Recap Generator */}
+                <RecapGenerator
+                  campaignData={{
+                    campaignName: selectedCampaign?.campaignName,
+                    dateRange: `${dateRange.start} to ${dateRange.end}`,
+                    sales: metrics.current.sales,
+                    cost: metrics.current.cost,
+                    roas: metrics.current.roas,
+                    units: metrics.current.units,
+                    buyers: metrics.current.buyers,
+                    cac: metrics.current.cac,
+                    costPerUnit: metrics.current.costPerUnit,
+                    budget: selectedCampaign?.summary?.budgetNum,
+                    spent: selectedCampaign?.summary?.costNum,
+                    completionRate: conversionMetrics?.totals?.avgCompletionRate,
+                    offers: selectedCampaign?.offers?.map(o => ({
+                      tactic: o['Tactic'],
+                      roas: o.roasNum,
+                      buyers: o.buyersNum,
+                      completionRate: o.completionRate,
+                      salesLift: o.salesLiftNum,
+                      cac: o.cac,
+                      engagementRate: o.engagementRate,
+                      buyerValuePerTrip: o.buyerValuePerTrip,
+                      isAcquisitionTactic: o.isAcquisitionTactic,
+                      isBrandBuyerTactic: o.isBrandBuyerTactic
+                    }))
+                  }}
+                  offers={selectedCampaign?.offers}
+                />
+
                 {/* CAC Info Callout */}
                 <CACInfoCallout hasAcquisitionOffers={offerTypeFlags.hasAcquisition} hasBrandBuyerOffers={offerTypeFlags.hasBrandBuyer} />
                 
@@ -1209,26 +1367,9 @@ export default function FetchDashboard() {
             {/* PACING TAB */}
             {activeTab === 'pacing' && pacingMetrics && (
               <>
-                {/* AI Insights */}
-                <AIChatPanel 
-                  campaignData={{
-                    campaignName: selectedCampaign?.campaignName,
-                    budget: pacingMetrics.totalBudget,
-                    spent: pacingMetrics.totalSpent,
-                    budgetConsumedPct: pacingMetrics.budgetConsumedPct,
-                    daysElapsed: pacingMetrics.daysElapsed,
-                    totalDays: pacingMetrics.totalCampaignDays,
-                    timeElapsedPct: pacingMetrics.timeElapsedPct,
-                    recentDailySpend: pacingMetrics.recentAvgSpend,
-                    projectedEndDate: formatDateShort(pacingMetrics.projectedEndDate),
-                    daysVariance: pacingMetrics.daysVariance,
-                    hasSpendThreshold: selectedCampaign?.offers?.some(o => o.isSpendThreshold)
-                  }}
-                  analysisType="pacing"
-                />
-                
                 <SpendThresholdWarning offers={selectedCampaign.offers} />
-                
+
+                {/* Campaign Header + Budget Progress */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
                   <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                     <div>
@@ -1237,22 +1378,26 @@ export default function FetchDashboard() {
                     </div>
                     <PacingBadge status={pacingMetrics.status} daysVariance={pacingMetrics.daysVariance} />
                   </div>
-                  
-                  <div className="mb-6">
+
+                  <div className="mb-4">
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-slate-600">Budget Progress</span>
                       <span className="font-medium">{formatCurrency(pacingMetrics.totalSpent)} / {formatCurrency(pacingMetrics.totalBudget)}</span>
                     </div>
                     <div className="h-4 bg-slate-100 rounded-full overflow-hidden relative">
                       <div className={`h-full rounded-full transition-all ${pacingMetrics.status === 'early' ? 'bg-rose-500' : pacingMetrics.status === 'late' ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(pacingMetrics.budgetConsumedPct, 100)}%` }} />
-                      <div className="absolute top-0 h-full w-0.5 bg-slate-400" style={{ left: `${Math.min(pacingMetrics.timeElapsedPct, 100)}%` }} />
+                      <div className="absolute top-0 h-full w-0.5 bg-slate-600" style={{ left: `${Math.min(pacingMetrics.timeElapsedPct, 100)}%` }} title="Time elapsed marker" />
                     </div>
                     <div className="flex justify-between text-xs mt-1 text-slate-500">
                       <span>{pacingMetrics.budgetConsumedPct.toFixed(1)}% spent</span>
                       <span>{pacingMetrics.timeElapsedPct.toFixed(1)}% of time elapsed</span>
                     </div>
+                    <div className="flex items-center justify-end gap-4 mt-2 text-xs text-slate-400">
+                      <div className="flex items-center gap-1.5"><div className={`w-6 h-2 rounded ${pacingMetrics.status === 'early' ? 'bg-rose-500' : pacingMetrics.status === 'late' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div><span>Budget spent</span></div>
+                      <div className="flex items-center gap-1.5"><div className="w-0.5 h-3 bg-slate-600"></div><span>Time elapsed</span></div>
+                    </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
                     <Info size={18} className="text-slate-400" />
                     <div className="flex-1">
@@ -1263,6 +1408,7 @@ export default function FetchDashboard() {
                   </div>
                 </div>
 
+                {/* Metric Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <MetricCard title="Days Elapsed" value={pacingMetrics.daysElapsed} icon={Clock} format="days" color="slate" subtitle={`of ${pacingMetrics.totalCampaignDays} total`} />
                   <MetricCard title="Days Remaining" value={Math.max(pacingMetrics.daysRemaining, 0)} icon={Calendar} format="days" color="blue" />
@@ -1270,45 +1416,38 @@ export default function FetchDashboard() {
                   <MetricCard title="Daily Spend (Recent)" value={pacingMetrics.recentAvgSpend} icon={TrendingUp} format="currency" color="green" subtitle="last 14 days" />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Target className="text-blue-600" size={20} />Pacing Projection</h3>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center py-3 border-b border-slate-100"><span className="text-slate-600">Budget Remaining</span><span className="font-bold text-lg">{formatCurrency(pacingMetrics.remainingBudget)}</span></div>
-                      <div className="flex justify-between items-center py-3 border-b border-slate-100"><span className="text-slate-600">Days Until Budget Exhausted</span><span className="font-bold text-lg">{Math.round(pacingMetrics.daysUntilBudgetExhausted)} days</span></div>
-                      <div className="flex justify-between items-center py-3 border-b border-slate-100"><span className="text-slate-600">Projected End Date</span><span className="font-bold text-lg">{formatDateShort(pacingMetrics.projectedEndDate)}</span></div>
-                      <div className="flex justify-between items-center py-3"><span className="text-slate-600">Variance vs Target</span><span className={`font-bold text-lg ${pacingMetrics.daysVariance < 0 ? 'text-rose-600' : pacingMetrics.daysVariance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{pacingMetrics.daysVariance > 0 ? '+' : ''}{Math.round(pacingMetrics.daysVariance)} days</span></div>
+                {/* Pacing Projection - Full Width */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                  <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Target className="text-blue-600" size={20} />Pacing Projection</h3>
+
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-5 border border-blue-200">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <div>
+                        <div className="text-sm text-blue-600 font-medium mb-1">Projected Total Spend</div>
+                        <div className="text-3xl font-bold text-blue-800">{formatCurrency(pacingMetrics.projectedTotalSpend)}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-blue-600 font-medium mb-1">vs Budget ({formatCurrency(pacingMetrics.totalBudget)})</div>
+                        <div className={`text-2xl font-bold ${pacingMetrics.projectedTotalSpend > pacingMetrics.totalBudget * 1.02 ? 'text-rose-600' : pacingMetrics.projectedTotalSpend < pacingMetrics.totalBudget * 0.9 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                          {pacingMetrics.projectedTotalSpend >= pacingMetrics.totalBudget ? '+' : ''}{formatCurrency(pacingMetrics.projectedTotalSpend - pacingMetrics.totalBudget)}
+                        </div>
+                      </div>
                     </div>
-                    {pacingMetrics.status === 'early' && <div className="mt-4 p-3 bg-rose-50 rounded-lg border border-rose-200"><p className="text-sm text-rose-700"><strong>⚠️ Budget will exhaust early.</strong> Consider requesting additional budget.</p></div>}
-                    {pacingMetrics.status === 'late' && <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200"><p className="text-sm text-amber-700"><strong>📉 Under pacing.</strong> ~{formatCurrency(pacingMetrics.totalBudget - pacingMetrics.projectedTotalSpend)} may remain unspent.</p></div>}
                   </div>
 
-                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-sm border border-indigo-200 p-6">
-                    <h3 className="font-semibold text-indigo-800 mb-4 flex items-center gap-2"><Calculator className="text-indigo-600" size={20} />Extension Calculator</h3>
-                    <p className="text-sm text-indigo-600 mb-4">Calculate additional budget needed to extend the campaign.</p>
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="text-sm text-indigo-700">Extend by</span>
-                      <input type="number" min="1" max="365" value={extensionDays} onChange={(e) => setExtensionDays(parseInt(e.target.value) || 1)} className="w-20 px-3 py-2 border border-indigo-300 rounded-lg text-center font-medium" />
-                      <select value={extensionType} onChange={(e) => setExtensionType(e.target.value)} className="px-3 py-2 border border-indigo-300 rounded-lg font-medium">
-                        <option value="days">Days</option>
-                        <option value="weeks">Weeks</option>
-                        <option value="months">Months</option>
-                      </select>
-                    </div>
-                    <div className="bg-white rounded-xl p-4 border border-indigo-200">
-                      <div className="text-center mb-4">
-                        <div className="text-sm text-slate-500 mb-1">Additional Budget Required</div>
-                        <div className="text-4xl font-bold text-indigo-700">{formatCurrency(pacingMetrics.extensionCost)}</div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="text-center p-2 bg-indigo-50 rounded-lg"><div className="text-indigo-600">New End Date</div><div className="font-semibold text-indigo-800">{formatDateShort(pacingMetrics.newEndDate)}</div></div>
-                        <div className="text-center p-2 bg-indigo-50 rounded-lg"><div className="text-indigo-600">Based On</div><div className="font-semibold text-indigo-800">{formatCurrency(pacingMetrics.recentAvgSpend)}/day</div></div>
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Budget Remaining</div><div className="font-bold text-slate-800">{formatCurrency(pacingMetrics.remainingBudget)}</div></div>
+                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Days Until Exhausted</div><div className="font-bold text-slate-800">{pacingMetrics.daysUntilBudgetExhausted === Infinity ? 'N/A' : `${Math.round(pacingMetrics.daysUntilBudgetExhausted)} days`}</div></div>
+                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Projected End Date</div><div className="font-bold text-slate-800">{formatDateShort(pacingMetrics.projectedEndDate)}</div></div>
+                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Variance vs Target</div><div className={`font-bold ${pacingMetrics.daysVariance < 0 ? 'text-rose-600' : pacingMetrics.daysVariance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{pacingMetrics.daysVariance > 0 ? '+' : ''}{Math.round(pacingMetrics.daysVariance)} days</div></div>
                   </div>
+
+                  {pacingMetrics.status === 'early' && <div className="mt-4 p-3 bg-rose-50 rounded-lg border border-rose-200"><p className="text-sm text-rose-700"><strong>Budget will exhaust early.</strong> Consider requesting additional budget or reducing targeting.</p></div>}
+                  {pacingMetrics.status === 'late' && <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200"><p className="text-sm text-amber-700"><strong>Under pacing.</strong> ~{formatCurrency(pacingMetrics.totalBudget - pacingMetrics.projectedTotalSpend)} may remain unspent. Consider expanding audience or increasing offer value.</p></div>}
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                {/* Cumulative Spend Chart */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
                   <h3 className="font-semibold text-slate-800 mb-4">Cumulative Spend vs Expected Pace</h3>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1325,6 +1464,53 @@ export default function FetchDashboard() {
                     </ResponsiveContainer>
                   </div>
                 </div>
+
+                {/* Extension Calculator - Separate Section */}
+                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-sm border border-indigo-200 p-6 mb-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calculator className="text-indigo-600" size={20} />
+                    <h3 className="font-semibold text-indigo-800">Campaign Extension Calculator</h3>
+                  </div>
+                  <p className="text-sm text-indigo-600 mb-4">Need to extend? Calculate the additional budget required based on recent daily spend.</p>
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="text-sm font-medium text-indigo-700">Extend by</span>
+                    <input type="number" min="1" max="365" value={extensionDays} onChange={(e) => setExtensionDays(parseInt(e.target.value) || 1)} className="w-20 px-3 py-2 border border-indigo-300 rounded-lg text-center font-medium" />
+                    <select value={extensionType} onChange={(e) => setExtensionType(e.target.value)} className="px-3 py-2 border border-indigo-300 rounded-lg font-medium">
+                      <option value="days">Days</option>
+                      <option value="weeks">Weeks</option>
+                      <option value="months">Months</option>
+                    </select>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-indigo-200">
+                    <div className="text-center mb-4">
+                      <div className="text-sm text-slate-500 mb-1">Additional Budget Required</div>
+                      <div className="text-4xl font-bold text-indigo-700">{formatCurrency(pacingMetrics.extensionCost)}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="text-center p-2 bg-indigo-50 rounded-lg"><div className="text-indigo-600">New End Date</div><div className="font-semibold text-indigo-800">{formatDateShort(pacingMetrics.newEndDate)}</div></div>
+                      <div className="text-center p-2 bg-indigo-50 rounded-lg"><div className="text-indigo-600">Based On</div><div className="font-semibold text-indigo-800">{formatCurrency(pacingMetrics.recentAvgSpend)}/day</div></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Chat - At Bottom After All Data */}
+                <AIChatPanel
+                  campaignData={{
+                    campaignName: selectedCampaign?.campaignName,
+                    budget: pacingMetrics.totalBudget,
+                    spent: pacingMetrics.totalSpent,
+                    budgetConsumedPct: pacingMetrics.budgetConsumedPct,
+                    daysElapsed: pacingMetrics.daysElapsed,
+                    totalDays: pacingMetrics.totalCampaignDays,
+                    timeElapsedPct: pacingMetrics.timeElapsedPct,
+                    recentDailySpend: pacingMetrics.recentAvgSpend,
+                    projectedEndDate: formatDateShort(pacingMetrics.projectedEndDate),
+                    projectedTotalSpend: pacingMetrics.projectedTotalSpend,
+                    daysVariance: pacingMetrics.daysVariance,
+                    hasSpendThreshold: selectedCampaign?.offers?.some(o => o.isSpendThreshold)
+                  }}
+                  analysisType="pacing"
+                />
               </>
             )}
 
@@ -1624,7 +1810,22 @@ export default function FetchDashboard() {
                       ) : (
                         <MetricCard title="Cost/Buyer" value={selectedOffer.cac} icon={Users} format="currency" color="slate" subtitle="Not true CAC" muted={true} />
                       )}
+                      {selectedOffer.isAcquisitionTactic ? (
+                        <MetricCard title="Engagement Rate" value={selectedOffer.engagementRate} icon={Target} format="percent" color="green" subtitle={`${formatNumber(selectedOffer.buyersNum)} of ${formatNumber(selectedOffer.audienceNum)}`} />
+                      ) : (
+                        <MetricCard title="$ Per Trip" value={selectedOffer.buyerValuePerTrip} icon={ShoppingCart} format="currency" color="purple" subtitle="Basket size" />
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                      <MetricCard title="Completion Rate" value={selectedOffer.completionRate} icon={CheckCircle} format="percent" color="green" subtitle={`${formatNumber(selectedOffer.redeemersNum)} redeemers`} />
                       <MetricCard title="Sales Lift" value={selectedOffer.salesLiftNum} icon={Zap} format="percent" color="purple" />
+                      {selectedOffer.isAcquisitionTactic && (
+                        <MetricCard title="Audience" value={selectedOffer.audienceNum} icon={Users} format="number" color="blue" subtitle="Total targeted" />
+                      )}
+                      {selectedOffer.isBrandBuyerTactic && (
+                        <MetricCard title="Units/Buyer" value={selectedOffer.unitsPerBuyer} icon={ShoppingCart} format="number" color="blue" subtitle="Purchase frequency" />
+                      )}
                     </div>
 
                     {selectedOffer.isBrandBuyerTactic && (
@@ -1632,9 +1833,23 @@ export default function FetchDashboard() {
                         <div className="flex items-start gap-3">
                           <Info className="text-blue-600 mt-0.5 flex-shrink-0" size={20} />
                           <div>
-                            <div className="font-semibold text-blue-800">Brand Buyer Segment</div>
+                            <div className="font-semibold text-blue-800">Brand Buyer Segment — Existing Customers</div>
                             <p className="text-sm text-blue-700">
-                              This is a retention/loyalty offer targeting existing brand buyers. <strong>Cost-per-buyer is not a true acquisition cost</strong> since these customers already purchase your brand. Focus on ROAS, Sales Lift, and increased basket size for this segment.
+                              This targets existing brand buyers. <strong>Cost-per-buyer is not a true acquisition cost</strong> since these customers already purchase your brand. Focus on <strong>ROAS, Sales Lift, and basket size ($/trip)</strong> for this segment.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedOffer.isAcquisitionTactic && (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+                        <div className="flex items-start gap-3">
+                          <Target className="text-emerald-600 mt-0.5 flex-shrink-0" size={20} />
+                          <div>
+                            <div className="font-semibold text-emerald-800">Acquisition Segment — New Customers</div>
+                            <p className="text-sm text-emerald-700">
+                              This targets new-to-brand buyers. <strong>CAC is the key efficiency metric</strong> here. Focus on <strong>CAC, engagement rate, and buyer volume</strong> to evaluate acquisition effectiveness.
                             </p>
                           </div>
                         </div>

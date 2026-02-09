@@ -168,6 +168,19 @@ function buildUserPrompt(data, analysisType, chatHistory) {
     return `Analyze the promo period performance. Break down the lift during the promo, whether it sustained post-promo, and give me a clear recommendation on whether to participate next time and what to adjust.`;
   }
 
+  if (analysisType === 'recap') {
+    const objective = data.objective || 'roas';
+
+    const objectivePrompts = {
+      roas: `Write a 2-3 sentence client email recap focused on ROAS and efficiency. Lead with the ROAS figure, mention incremental sales and sales lift if available, and note cost efficiency. This should read like a polished account manager update — confident, specific, and ready to paste into an email.`,
+      acquisition: `Write a 2-3 sentence client email recap focused on acquisition and growth. Lead with new buyer metrics (buyer count, CAC if acquisition segments exist), mention engagement rate and incremental lift. Frame the results in terms of growing the customer base. Ready to paste into a client email.`,
+      retention: `Write a 2-3 sentence client email recap focused on retention and loyalty. Lead with completion rate and repeat purchase behavior ($/trip, units per buyer), mention ROAS as secondary. Frame results around deepening existing customer relationships. Ready to paste into a client email.`,
+      awareness: `Write a 2-3 sentence client email recap focused on awareness and reach. Lead with audience size and engagement rate, mention buyer count and cost per buyer. Frame results around brand exposure and top-of-funnel impact. Ready to paste into a client email.`,
+    };
+
+    return objectivePrompts[objective] || objectivePrompts.roas;
+  }
+
   if (analysisType === 'chat') {
     return data.question || 'What would you like to know about this campaign?';
   }
