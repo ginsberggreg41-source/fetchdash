@@ -255,15 +255,15 @@ const daysBetween = (date1, date2) => {
 // Metric Card Component
 const MetricCard = ({ title, value, change, icon: Icon, format = 'number', color = 'blue', subtitle, muted = false }) => {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-700 border-blue-200',
-    green: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    purple: 'bg-purple-50 text-purple-700 border-purple-200',
-    amber: 'bg-amber-50 text-amber-700 border-amber-200',
-    rose: 'bg-rose-50 text-rose-700 border-rose-200',
-    cyan: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-    indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    orange: 'bg-orange-50 text-orange-700 border-orange-200',
-    slate: 'bg-slate-50 text-slate-700 border-slate-200'
+    blue: 'bg-blue-950/50 text-blue-400 border-blue-900/50',
+    green: 'bg-emerald-950/50 text-emerald-400 border-emerald-900/50',
+    purple: 'bg-purple-950/50 text-purple-400 border-purple-900/50',
+    amber: 'bg-amber-950/50 text-amber-400 border-amber-900/50',
+    rose: 'bg-rose-950/50 text-rose-400 border-rose-900/50',
+    cyan: 'bg-cyan-950/50 text-cyan-400 border-cyan-900/50',
+    indigo: 'bg-indigo-950/50 text-indigo-400 border-indigo-900/50',
+    orange: 'bg-orange-950/50 text-orange-400 border-orange-900/50',
+    slate: 'bg-slate-800 text-slate-400 border-slate-700'
   };
   
   const formattedValue = format === 'currency' ? formatCurrency(value) : 
@@ -278,10 +278,10 @@ const MetricCard = ({ title, value, change, icon: Icon, format = 'number', color
         <span className="text-sm font-medium opacity-80">{title}</span>
         <Icon size={18} className="opacity-60" />
       </div>
-      <div className="text-2xl font-bold">{formattedValue}</div>
+      <div className="text-2xl font-bold text-white">{formattedValue}</div>
       {subtitle && <div className="text-xs opacity-70 mt-1">{subtitle}</div>}
       {change !== undefined && change !== null && (
-        <div className={`flex items-center text-sm mt-1 ${change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+        <div className={`flex items-center text-sm mt-1 ${change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
           {change >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
           <span className="ml-1">{Math.abs(change).toFixed(1)}%</span>
         </div>
@@ -293,21 +293,21 @@ const MetricCard = ({ title, value, change, icon: Icon, format = 'number', color
 // CAC Info Callout
 const CACInfoCallout = ({ hasAcquisitionOffers, hasBrandBuyerOffers }) => {
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+    <div className="bg-blue-950/30 border border-blue-800/50 rounded-xl p-4 mb-6">
       <div className="flex items-start gap-3">
-        <Info className="text-blue-600 mt-0.5 flex-shrink-0" size={20} />
+        <Info className="text-blue-400 mt-0.5 flex-shrink-0" size={20} />
         <div>
-          <div className="font-semibold text-blue-800 mb-1">Understanding Customer Acquisition Cost (CAC)</div>
-          <p className="text-sm text-blue-700 mb-2">
+          <div className="font-semibold text-blue-300 mb-1">Understanding Customer Acquisition Cost (CAC)</div>
+          <p className="text-sm text-blue-400 mb-2">
             <strong>CAC is only meaningful for acquisition segments</strong> — specifically <span className="font-semibold">New Category Entrant (NCE)</span> and <span className="font-semibold">Competitive Targeting</span> offers where you're acquiring new customers to your brand.
           </p>
           {hasBrandBuyerOffers && (
-            <p className="text-sm text-blue-600">
+            <p className="text-sm text-blue-400">
               ⚠️ This campaign includes <strong>Brand Buyer</strong> segments. Cost-per-buyer for Brand Buyers is <em>not</em> a true acquisition cost since these customers already purchase your brand. Focus on ROAS and Sales Lift for those segments instead.
             </p>
           )}
           {hasAcquisitionOffers && (
-            <p className="text-sm text-blue-600 mt-1">
+            <p className="text-sm text-blue-400 mt-1">
               ✓ This campaign has acquisition offers (NCE/Competitive) — CAC is relevant for those specific segments.
             </p>
           )}
@@ -320,10 +320,10 @@ const CACInfoCallout = ({ hasAcquisitionOffers, hasBrandBuyerOffers }) => {
 // Pacing Status Badge
 const PacingBadge = ({ status, daysVariance }) => {
   const configs = {
-    early: { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200', icon: Rocket, label: 'Ending Early' },
-    late: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', icon: PauseCircle, label: 'Under Pacing' },
-    onTrack: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: CheckCircle, label: 'On Track' },
-    complete: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200', icon: CheckCircle, label: 'Complete' }
+    early: { bg: 'bg-rose-950/50', text: 'text-rose-400', border: 'border-rose-800/50', icon: Rocket, label: 'Ending Early' },
+    late: { bg: 'bg-amber-950/50', text: 'text-amber-400', border: 'border-amber-800/50', icon: PauseCircle, label: 'Under Pacing' },
+    onTrack: { bg: 'bg-emerald-950/50', text: 'text-emerald-400', border: 'border-emerald-800/50', icon: CheckCircle, label: 'On Track' },
+    complete: { bg: 'bg-slate-800', text: 'text-slate-400', border: 'border-slate-700', icon: CheckCircle, label: 'Complete' }
   };
   
   const config = configs[status] || configs.onTrack;
@@ -346,19 +346,19 @@ const SpendThresholdWarning = ({ offers }) => {
   if (spendOffers.length === 0) return null;
   
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+    <div className="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 mb-6">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="text-amber-600 mt-0.5 flex-shrink-0" size={20} />
+        <AlertTriangle className="text-amber-400 mt-0.5 flex-shrink-0" size={20} />
         <div>
-          <div className="font-semibold text-amber-800 mb-1">Spend Threshold Detected</div>
-          <p className="text-sm text-amber-700 mb-2">
-            {spendOffers.length === 1 ? 'This campaign has' : `${spendOffers.length} offers have`} a spend threshold requirement. 
+          <div className="font-semibold text-amber-300 mb-1">Spend Threshold Detected</div>
+          <p className="text-sm text-amber-400 mb-2">
+            {spendOffers.length === 1 ? 'This campaign has' : `${spendOffers.length} offers have`} a spend threshold requirement.
             Early pacing may appear slow because users need time to accumulate qualifying purchases before redemption.
           </p>
-          <div className="text-sm text-amber-600">
+          <div className="text-sm text-amber-400">
             <strong>Affected offers:</strong> {spendOffers.map(o => o['Tactic']).join(', ')}
           </div>
-          <p className="text-xs text-amber-600 mt-2 italic">
+          <p className="text-xs text-amber-400 mt-2 italic">
             💡 Tip: Compare pacing after 4-6 weeks for a more accurate read on spend-threshold campaigns.
           </p>
         </div>
@@ -370,10 +370,10 @@ const SpendThresholdWarning = ({ offers }) => {
 // Promo Period Card
 const PromoPeriodCard = ({ title, icon: Icon, color, data, isBaseline = false }) => {
   const colorStyles = {
-    slate: { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', accent: 'text-slate-600' },
-    purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', accent: 'text-purple-600' },
-    amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', accent: 'text-amber-600' },
-    green: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', accent: 'text-emerald-600' }
+    slate: { bg: 'bg-slate-800', border: 'border-slate-700', text: 'text-slate-300', accent: 'text-slate-400' },
+    purple: { bg: 'bg-purple-950/30', border: 'border-purple-800/50', text: 'text-purple-300', accent: 'text-purple-400' },
+    amber: { bg: 'bg-amber-950/30', border: 'border-amber-800/50', text: 'text-amber-300', accent: 'text-amber-400' },
+    green: { bg: 'bg-emerald-950/30', border: 'border-emerald-800/50', text: 'text-emerald-300', accent: 'text-emerald-400' }
   };
   
   const style = colorStyles[color] || colorStyles.slate;
@@ -383,68 +383,68 @@ const PromoPeriodCard = ({ title, icon: Icon, color, data, isBaseline = false })
       <div className="flex items-center gap-2 mb-3">
         <Icon size={18} className={style.accent} />
         <span className={`font-semibold ${style.text}`}>{title}</span>
-        {isBaseline && <span className="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">Baseline</span>}
+        {isBaseline && <span className="text-xs bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">Baseline</span>}
       </div>
       <div className="text-xs text-slate-500 mb-3">{data.dateRange}</div>
       <div className="space-y-2">
         <div className="flex justify-between">
-          <span className="text-sm text-slate-600">Sales</span>
+          <span className="text-sm text-slate-400">Sales</span>
           <div className="text-right">
-            <span className="font-semibold">{formatCurrency(data.sales)}</span>
+            <span className="font-semibold text-white">{formatCurrency(data.sales)}</span>
             {data.salesChange !== undefined && (
-              <span className={`text-xs ml-2 ${data.salesChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`text-xs ml-2 ${data.salesChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {data.salesChange >= 0 ? '+' : ''}{data.salesChange.toFixed(1)}%
               </span>
             )}
           </div>
         </div>
         <div className="flex justify-between">
-          <span className="text-sm text-slate-600">Units</span>
+          <span className="text-sm text-slate-400">Units</span>
           <div className="text-right">
-            <span className="font-semibold">{formatNumber(data.units)}</span>
+            <span className="font-semibold text-white">{formatNumber(data.units)}</span>
             {data.unitsChange !== undefined && (
-              <span className={`text-xs ml-2 ${data.unitsChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`text-xs ml-2 ${data.unitsChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {data.unitsChange >= 0 ? '+' : ''}{data.unitsChange.toFixed(1)}%
               </span>
             )}
           </div>
         </div>
         <div className="flex justify-between">
-          <span className="text-sm text-slate-600">Buyers</span>
+          <span className="text-sm text-slate-400">Buyers</span>
           <div className="text-right">
-            <span className="font-semibold">{formatNumber(data.buyers)}</span>
+            <span className="font-semibold text-white">{formatNumber(data.buyers)}</span>
             {data.buyersChange !== undefined && (
-              <span className={`text-xs ml-2 ${data.buyersChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`text-xs ml-2 ${data.buyersChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {data.buyersChange >= 0 ? '+' : ''}{data.buyersChange.toFixed(1)}%
               </span>
             )}
           </div>
         </div>
         <div className="flex justify-between">
-          <span className="text-sm text-slate-600">Spend</span>
+          <span className="text-sm text-slate-400">Spend</span>
           <div className="text-right">
-            <span className="font-semibold">{formatCurrency(data.cost)}</span>
+            <span className="font-semibold text-white">{formatCurrency(data.cost)}</span>
             {data.costChange !== undefined && (
-              <span className={`text-xs ml-2 ${data.costChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`text-xs ml-2 ${data.costChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {data.costChange >= 0 ? '+' : ''}{data.costChange.toFixed(1)}%
               </span>
             )}
           </div>
         </div>
-        <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
-          <span className="text-sm text-slate-600">ROAS</span>
+        <div className="flex justify-between border-t border-slate-700 pt-2 mt-2">
+          <span className="text-sm text-slate-400">ROAS</span>
           <div className="text-right">
             <span className="font-bold text-blue-600">{data.roas.toFixed(2)}x</span>
             {data.roasChange !== undefined && (
-              <span className={`text-xs ml-2 ${data.roasChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`text-xs ml-2 ${data.roasChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {data.roasChange >= 0 ? '+' : ''}{data.roasChange.toFixed(1)}%
               </span>
             )}
           </div>
         </div>
         <div className="flex justify-between">
-          <span className="text-sm text-slate-600">Avg Daily Sales</span>
-          <span className="font-semibold">{formatCurrency(data.avgDailySales)}</span>
+          <span className="text-sm text-slate-400">Avg Daily Sales</span>
+          <span className="font-semibold text-white">{formatCurrency(data.avgDailySales)}</span>
         </div>
       </div>
     </div>
@@ -465,11 +465,11 @@ const ConversionFunnel = ({ data }) => {
         return (
           <div key={item.name}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-slate-700">{item.name}</span>
-              <span className="text-sm font-bold text-slate-800">{formatNumber(item.value)}</span>
+              <span className="text-sm font-medium text-slate-300">{item.name}</span>
+              <span className="text-sm font-bold text-white">{formatNumber(item.value)}</span>
             </div>
             <div className="relative">
-              <div className="h-10 bg-slate-100 rounded-lg overflow-hidden">
+              <div className="h-10 bg-slate-800 rounded-lg overflow-hidden">
                 <div className="h-full rounded-lg transition-all duration-500" style={{ width: `${width}%`, backgroundColor: item.color, opacity: 0.8 + (index * 0.1) }} />
               </div>
               {dropOff !== null && (
@@ -489,17 +489,17 @@ const ConversionFunnel = ({ data }) => {
 // Insight Card
 const InsightCard = ({ type, title, description, metric, icon: Icon }) => {
   const typeStyles = {
-    success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-    warning: 'bg-amber-50 border-amber-200 text-amber-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
-    alert: 'bg-rose-50 border-rose-200 text-rose-800'
+    success: 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300',
+    warning: 'bg-amber-950/30 border-amber-800/50 text-amber-300',
+    info: 'bg-blue-950/30 border-blue-800/50 text-blue-300',
+    alert: 'bg-rose-950/30 border-rose-800/50 text-rose-300'
   };
-  
+
   const iconStyles = {
-    success: 'text-emerald-600',
-    warning: 'text-amber-600',
-    info: 'text-blue-600',
-    alert: 'text-rose-600'
+    success: 'text-emerald-400',
+    warning: 'text-amber-400',
+    info: 'text-blue-400',
+    alert: 'text-rose-400'
   };
   
   return (
@@ -599,18 +599,18 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
   ];
 
   return (
-    <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border border-violet-200 p-6 mb-6">
+    <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Bot className="text-violet-600" size={20} />
-          <h3 className="font-semibold text-violet-800">AI Campaign Assistant</h3>
-          <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Claude Haiku</span>
+          <Bot className="text-violet-400" size={20} />
+          <h3 className="font-semibold text-violet-300">AI Campaign Assistant</h3>
+          <span className="text-xs bg-violet-900/50 text-violet-400 px-2 py-0.5 rounded-full">Claude Haiku</span>
         </div>
         <div className="flex gap-2">
           {messages.length > 0 && (
             <button
               onClick={clearChat}
-              className="text-sm text-violet-600 hover:text-violet-800 px-3 py-1 rounded-lg hover:bg-violet-100"
+              className="text-sm text-violet-400 hover:text-violet-300 px-3 py-1 rounded-lg hover:bg-slate-800"
             >
               Clear Chat
             </button>
@@ -629,29 +629,29 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
       </div>
 
       {error && (
-        <div className="bg-rose-100 border border-rose-200 rounded-lg p-4 text-rose-700 text-sm mb-4">
+        <div className="bg-rose-950/30 border border-rose-800/50 rounded-lg p-4 text-rose-400 text-sm mb-4">
           {error}
         </div>
       )}
 
       {/* Messages */}
       {messages.length > 0 && (
-        <div ref={messagesContainerRef} className="bg-white rounded-xl border border-violet-100 mb-4 max-h-96 overflow-y-auto">
+        <div ref={messagesContainerRef} className="bg-slate-800 rounded-xl border border-slate-700 mb-4 max-h-96 overflow-y-auto">
           {messages.map((msg, i) => (
-            <div key={i} className={`p-4 ${i > 0 ? 'border-t border-violet-50' : ''} ${msg.role === 'user' ? 'bg-slate-50' : ''}`}>
+            <div key={i} className={`p-4 ${i > 0 ? 'border-t border-slate-700' : ''} ${msg.role === 'user' ? 'bg-slate-800/50' : ''}`}>
               <div className="flex items-start gap-3">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-slate-200' : 'bg-violet-100'}`}>
-                  {msg.role === 'user' ? <User size={14} className="text-slate-600" /> : <Bot size={14} className="text-violet-600" />}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-slate-700' : 'bg-violet-900/50'}`}>
+                  {msg.role === 'user' ? <User size={14} className="text-slate-400" /> : <Bot size={14} className="text-violet-400" />}
                 </div>
-                <div className="flex-1 text-sm text-slate-700 whitespace-pre-wrap">{msg.content}</div>
+                <div className="flex-1 text-sm text-slate-300 whitespace-pre-wrap">{msg.content}</div>
               </div>
             </div>
           ))}
           {loading && (
-            <div className="p-4 border-t border-violet-50">
+            <div className="p-4 border-t border-slate-700">
               <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center">
-                  <Loader2 size={14} className="text-violet-600 animate-spin" />
+                <div className="w-7 h-7 rounded-full bg-violet-900/50 flex items-center justify-center">
+                  <Loader2 size={14} className="text-violet-400 animate-spin" />
                 </div>
                 <span className="text-sm text-slate-500">Thinking...</span>
               </div>
@@ -664,7 +664,7 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
       {/* Suggested Questions (only show if no messages) */}
       {messages.length === 0 && !loading && (
         <div className="mb-4">
-          <p className="text-xs text-violet-600 mb-2">Quick questions:</p>
+          <p className="text-xs text-violet-400 mb-2">Quick questions:</p>
           <div className="flex flex-wrap gap-2">
             {suggestedQuestions.map((q, i) => (
               <button
@@ -673,7 +673,7 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
                   setMessages([{ role: 'user', content: q }]);
                   sendMessage(q);
                 }}
-                className="text-xs px-3 py-1.5 bg-white border border-violet-200 rounded-full text-violet-700 hover:bg-violet-50 transition-colors"
+                className="text-xs px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-full text-slate-300 hover:bg-slate-700 transition-colors"
               >
                 {q}
               </button>
@@ -692,7 +692,7 @@ const AIChatPanel = ({ campaignData, analysisType }) => {
             onKeyPress={handleKeyPress}
             placeholder="Ask a follow-up question..."
             disabled={loading}
-            className="flex-1 px-4 py-2 border border-violet-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50"
+            className="flex-1 px-4 py-2 bg-slate-800 text-white placeholder-slate-500 border border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
           />
           <button
             onClick={() => sendMessage()}
@@ -759,10 +759,10 @@ const RecapGenerator = ({ campaignData, offers }) => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl border border-slate-200 p-6 mb-6">
+    <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6 mb-6">
       <div className="flex items-center gap-2 mb-1">
-        <FileText className="text-slate-700" size={20} />
-        <h3 className="font-semibold text-slate-800">Campaign Recap for Client</h3>
+        <FileText className="text-slate-300" size={20} />
+        <h3 className="font-semibold text-white">Campaign Recap for Client</h3>
       </div>
       <p className="text-sm text-slate-500 mb-4">Select the campaign objective to generate a recap paragraph tailored to your client's goals.</p>
 
@@ -775,7 +775,7 @@ const RecapGenerator = ({ campaignData, offers }) => {
             className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
               selectedObjective?.id === obj.id
                 ? `bg-${obj.color}-100 border-${obj.color}-300 text-${obj.color}-800`
-                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'
             } disabled:opacity-50`}
           >
             <obj.icon size={16} />
@@ -785,30 +785,30 @@ const RecapGenerator = ({ campaignData, offers }) => {
       </div>
 
       {loading && (
-        <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200">
+        <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-xl border border-slate-700">
           <Loader2 size={16} className="animate-spin text-slate-500" />
           <span className="text-sm text-slate-500">Generating recap for {selectedObjective?.label}...</span>
         </div>
       )}
 
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-rose-700 text-sm">{error}</div>
+        <div className="bg-rose-950/30 border border-rose-800/50 rounded-xl p-4 text-rose-400 text-sm">{error}</div>
       )}
 
       {recap && !loading && (
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <div className="bg-slate-800 rounded-xl border border-slate-700 p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
               {selectedObjective?.label} Recap
             </span>
             <button
               onClick={copyToClipboard}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-400 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
             >
-              {copied ? <><CheckCircle size={12} className="text-emerald-600" /> Copied</> : <><Copy size={12} /> Copy</>}
+              {copied ? <><CheckCircle size={12} className="text-emerald-400" /> Copied</> : <><Copy size={12} /> Copy</>}
             </button>
           </div>
-          <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{recap}</div>
+          <div className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{recap}</div>
         </div>
       )}
     </div>
@@ -882,7 +882,7 @@ const PortfolioView = ({ campaigns, onSelectCampaign }) => {
     get budgetPct() { return this.budget > 0 ? (this.spend / this.budget) * 100 : 0; }
   }), [portfolioRows]);
 
-  const pacingRowColor = { early: 'bg-rose-50', late: 'bg-amber-50', onTrack: 'bg-emerald-50', complete: 'bg-slate-50' };
+  const pacingBorderColor = { early: 'border-l-rose-500', late: 'border-l-amber-500', onTrack: 'border-l-emerald-500', complete: 'border-l-slate-500' };
   const pacingLabel = { early: 'Ending Early', late: 'Under Pacing', onTrack: 'On Track', complete: 'Complete' };
   const pacingDot = { early: 'bg-rose-400', late: 'bg-amber-400', onTrack: 'bg-emerald-400', complete: 'bg-slate-400' };
 
@@ -904,20 +904,20 @@ const PortfolioView = ({ campaigns, onSelectCampaign }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="p-6 border-b border-slate-200">
+    <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 overflow-hidden">
+      <div className="p-6 border-b border-slate-700">
         <div className="flex items-center gap-3">
-          <Briefcase className="text-slate-700" size={22} />
-          <h2 className="text-lg font-bold text-slate-800">Portfolio Overview</h2>
+          <Briefcase className="text-slate-300" size={22} />
+          <h2 className="text-lg font-bold text-white">Portfolio Overview</h2>
           <span className="text-sm text-slate-500">{campaigns.length} campaigns</span>
         </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50">
+          <thead className="bg-slate-800">
             <tr>
               {columns.map(col => (
-                <th key={col.key} onClick={() => toggleSort(col.key)} className={`p-3 font-medium text-slate-600 cursor-pointer hover:bg-slate-100 select-none ${col.align === 'right' ? 'text-right' : 'text-left'}`}>
+                <th key={col.key} onClick={() => toggleSort(col.key)} className={`p-3 font-medium text-slate-400 cursor-pointer hover:bg-slate-700 select-none ${col.align === 'right' ? 'text-right' : 'text-left'}`}>
                   <span className="inline-flex items-center gap-1">{col.label}<SortIcon col={col.key} /></span>
                 </th>
               ))}
@@ -925,8 +925,8 @@ const PortfolioView = ({ campaigns, onSelectCampaign }) => {
           </thead>
           <tbody>
             {sorted.map((row, i) => (
-              <tr key={i} onClick={() => onSelectCampaign(row.campaign)} className={`border-t border-slate-100 cursor-pointer hover:brightness-95 transition-colors ${pacingRowColor[row.pacingStatus]}`}>
-                <td className="p-3 font-medium text-slate-800 max-w-[220px] truncate">{row.campaignName}</td>
+              <tr key={i} onClick={() => onSelectCampaign(row.campaign)} className={`border-t border-slate-800 cursor-pointer hover:bg-slate-800 transition-colors border-l-2 ${pacingBorderColor[row.pacingStatus]}`}>
+                <td className="p-3 font-medium text-white max-w-[220px] truncate">{row.campaignName}</td>
                 <td className="p-3"><span className="inline-flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${pacingDot[row.pacingStatus]}`}></span>{pacingLabel[row.pacingStatus]}</span></td>
                 <td className="p-3 text-right font-semibold text-cyan-600">{row.roas.toFixed(2)}x</td>
                 <td className="p-3 text-right">{formatCurrency(row.sales)}</td>
@@ -938,8 +938,8 @@ const PortfolioView = ({ campaigns, onSelectCampaign }) => {
               </tr>
             ))}
           </tbody>
-          <tfoot className="bg-slate-100 border-t-2 border-slate-300">
-            <tr className="font-semibold text-slate-800">
+          <tfoot className="bg-slate-800 border-t-2 border-slate-600">
+            <tr className="font-semibold text-white">
               <td className="p-3">Portfolio Total</td>
               <td className="p-3"></td>
               <td className="p-3 text-right text-cyan-600">{totals.roas.toFixed(2)}x</td>
@@ -1156,19 +1156,19 @@ const ReportModal = ({ campaign, metrics, pacingMetrics, conversionMetrics, onCl
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto py-8 print:p-0 print:bg-white">
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center overflow-y-auto py-8 print:p-0 print:bg-white">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 print:shadow-none print:rounded-none print:m-0 print:max-w-none">
         {/* Modal Controls (hidden on print) */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 print:hidden">
-          <h2 className="font-semibold text-slate-800 flex items-center gap-2"><FileText size={20} /> Client Report</h2>
+        <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-900 rounded-t-2xl print:hidden">
+          <h2 className="font-semibold text-white flex items-center gap-2"><FileText size={20} /> Client Report</h2>
           <div className="flex items-center gap-2">
-            <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">
-              {copied ? <><CheckCircle size={14} className="text-emerald-600" /> Copied</> : <><ClipboardCopy size={14} /> Copy Summary</>}
+            <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 bg-slate-800 rounded-lg hover:bg-slate-700">
+              {copied ? <><CheckCircle size={14} className="text-emerald-400" /> Copied</> : <><ClipboardCopy size={14} /> Copy Summary</>}
             </button>
             <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
               <Printer size={14} /> Print
             </button>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"><X size={20} /></button>
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-300 rounded-lg hover:bg-slate-800"><X size={20} /></button>
           </div>
         </div>
         <ClientReport
@@ -1515,62 +1515,80 @@ export default function FetchDashboard() {
     return axes;
   }, [selectedMetrics]);
 
+  const tabs = useMemo(() => [
+    ...(campaigns.length >= 2 ? [{ id: 'portfolio', label: 'Portfolio', icon: Briefcase }] : []),
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'pacing', label: 'Pacing & Upsell', icon: Rocket },
+    { id: 'promo', label: 'Promo Analysis', icon: Sparkles },
+    { id: 'conversion', label: 'Conversion', icon: Filter },
+    { id: 'offers', label: 'Offer Deep Dive', icon: Target }
+  ], [campaigns.length]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">Fetch Campaign Analytics</h1>
-          <p className="text-slate-500">Upload campaign exports to analyze performance, pacing, and promo lift</p>
+    <div className="min-h-screen bg-slate-950 flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-slate-900 border-r border-slate-800 fixed inset-y-0 left-0 flex flex-col">
+        <div className="p-4 border-b border-slate-800">
+          <h1 className="text-lg font-bold text-white">Fetch Analytics</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Campaign Dashboard</p>
         </div>
 
-        {/* Upload */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <label className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
-              <Upload size={18} />
-              <span>Upload CSV</span>
-              <input type="file" accept=".csv" multiple onChange={handleFileUpload} className="hidden" />
-            </label>
-            
-            {campaigns.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {campaigns.map(c => (
-                  <div
-                    key={c.fileName}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-pointer transition-all ${selectedCampaign?.fileName === c.fileName ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
-                    onClick={() => { setSelectedCampaign(c); setCustomEndDate(''); if (c.dailyData.length > 0) setDateRange({ start: c.dailyData[0].date, end: c.dailyData[c.dailyData.length - 1].date }); }}
-                  >
-                    <span className="text-sm font-medium truncate max-w-[200px]">{c.campaignName}</span>
-                    <button onClick={(e) => { e.stopPropagation(); removeCampaign(c.fileName); }} className="hover:text-rose-500"><X size={14} /></button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="p-3">
+          <label className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors text-sm font-medium">
+            <Upload size={16} />
+            <span>Upload CSV</span>
+            <input type="file" accept=".csv" multiple onChange={handleFileUpload} className="hidden" />
+          </label>
         </div>
 
-        {selectedCampaign ? (
-          <>
-            {/* Tabs */}
-            <div className="flex gap-2 mb-6 flex-wrap">
-              {[
-                ...(campaigns.length >= 2 ? [{ id: 'portfolio', label: 'Portfolio', icon: Briefcase }] : []),
-                { id: 'overview', label: 'Overview', icon: BarChart3 },
-                { id: 'pacing', label: 'Pacing & Upsell', icon: Rocket },
-                { id: 'promo', label: 'Promo Analysis', icon: Sparkles },
-                { id: 'conversion', label: 'Conversion', icon: Filter },
-                { id: 'offers', label: 'Offer Deep Dive', icon: Target }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
+        {campaigns.length > 0 && (
+          <div className="px-3 pb-3 sidebar-scroll overflow-y-auto flex-shrink-0">
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-2 px-1">Campaigns</div>
+            <div className="space-y-1">
+              {campaigns.map(c => (
+                <div
+                  key={c.fileName}
+                  className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all ${selectedCampaign?.fileName === c.fileName ? 'bg-blue-600/20 border border-blue-500/30 text-blue-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'}`}
+                  onClick={() => { setSelectedCampaign(c); setCustomEndDate(''); if (c.dailyData.length > 0) setDateRange({ start: c.dailyData[0].date, end: c.dailyData[c.dailyData.length - 1].date }); }}
                 >
-                  <tab.icon size={18} />
-                  {tab.label}
-                </button>
+                  <span className="text-sm font-medium truncate flex-1">{c.campaignName}</span>
+                  <button onClick={(e) => { e.stopPropagation(); removeCampaign(c.fileName); }} className="opacity-0 group-hover:opacity-100 hover:text-rose-400 transition-opacity"><X size={14} /></button>
+                </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {selectedCampaign && (
+          <>
+            <div className="border-t border-slate-800 mx-3"></div>
+            <nav className="flex-1 p-3 sidebar-scroll overflow-y-auto">
+              <div className="text-xs text-slate-500 uppercase tracking-wider mb-2 px-1">Navigation</div>
+              <div className="space-y-1">
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-blue-600/20 text-blue-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'}`}
+                  >
+                    <tab.icon size={18} />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </nav>
+          </>
+        )}
+
+        <div className="mt-auto p-3 border-t border-slate-800">
+          <p className="text-xs text-slate-600 text-center">Fetch Campaign Analytics</p>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="ml-64 flex-1 p-6">
+        {selectedCampaign ? (
+          <>
 
             {/* PORTFOLIO TAB */}
             {activeTab === 'portfolio' && campaigns.length >= 2 && (
@@ -1645,7 +1663,7 @@ export default function FetchDashboard() {
                 <div className="flex justify-end mb-6">
                   <button
                     onClick={() => setShowReportModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
                   >
                     <FileText size={16} />
                     Generate Client Report
@@ -1655,26 +1673,26 @@ export default function FetchDashboard() {
                 {/* CAC Info Callout */}
                 <CACInfoCallout hasAcquisitionOffers={offerTypeFlags.hasAcquisition} hasBrandBuyerOffers={offerTypeFlags.hasBrandBuyer} />
                 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
                   <div className="flex flex-wrap items-end gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-slate-600 mb-1">Primary Period</label>
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Primary Period</label>
                       <div className="flex items-center gap-2">
-                        <input type="date" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                        <span className="text-slate-400">to</span>
-                        <input type="date" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                        <input type="date" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="px-3 py-2 border border-slate-600 rounded-lg text-sm bg-slate-800 text-white" />
+                        <span className="text-slate-500">to</span>
+                        <input type="date" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="px-3 py-2 border border-slate-600 rounded-lg text-sm bg-slate-800 text-white" />
                       </div>
                     </div>
-                    <button onClick={() => setShowComparison(!showComparison)} className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${showComparison ? 'bg-purple-50 border-purple-300 text-purple-700' : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100'}`}>
+                    <button onClick={() => setShowComparison(!showComparison)} className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${showComparison ? 'bg-purple-950/30 border-purple-700 text-purple-400' : 'bg-slate-800 border-slate-600 text-slate-400 hover:bg-slate-700'}`}>
                       <Layers size={16} /><span>Compare Periods</span>
                     </button>
                     {showComparison && (
                       <div>
-                        <label className="block text-sm font-medium text-slate-600 mb-1">Comparison Period</label>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Comparison Period</label>
                         <div className="flex items-center gap-2">
-                          <input type="date" value={comparisonRange.start} onChange={(e) => setComparisonRange(prev => ({ ...prev, start: e.target.value }))} className="px-3 py-2 border border-purple-300 rounded-lg text-sm bg-purple-50" />
-                          <span className="text-slate-400">to</span>
-                          <input type="date" value={comparisonRange.end} onChange={(e) => setComparisonRange(prev => ({ ...prev, end: e.target.value }))} className="px-3 py-2 border border-purple-300 rounded-lg text-sm bg-purple-50" />
+                          <input type="date" value={comparisonRange.start} onChange={(e) => setComparisonRange(prev => ({ ...prev, start: e.target.value }))} className="px-3 py-2 border border-purple-700 rounded-lg text-sm bg-purple-950/30 text-white" />
+                          <span className="text-slate-500">to</span>
+                          <input type="date" value={comparisonRange.end} onChange={(e) => setComparisonRange(prev => ({ ...prev, end: e.target.value }))} className="px-3 py-2 border border-purple-700 rounded-lg text-sm bg-purple-950/30 text-white" />
                         </div>
                       </div>
                     )}
@@ -1690,34 +1708,34 @@ export default function FetchDashboard() {
                   <MetricCard title="Cost/Buyer" value={metrics.current.cac} change={metrics.changes.cac} icon={Users} format="currency" color="slate" subtitle="See CAC note above" muted={!offerTypeFlags.hasAcquisition} />
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
                   <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                     <div>
-                      <h3 className="font-semibold text-slate-800 mb-2">Select Metrics to Plot (up to 4)</h3>
+                      <h3 className="font-semibold text-white mb-2">Select Metrics to Plot (up to 4)</h3>
                       <div className="flex flex-wrap gap-2">
                         {Object.entries(metricConfig).map(([key, config]) => (
-                          <button key={key} onClick={() => toggleMetric(key)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${selectedMetrics.includes(key) ? 'text-white border-transparent' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`} style={selectedMetrics.includes(key) ? { backgroundColor: config.color } : {}}>
+                          <button key={key} onClick={() => toggleMetric(key)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${selectedMetrics.includes(key) ? 'text-white border-transparent' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}`} style={selectedMetrics.includes(key) ? { backgroundColor: config.color } : {}}>
                             {config.label}
                           </button>
                         ))}
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => setChartType('line')} className={`px-3 py-1.5 rounded-lg text-sm ${chartType === 'line' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>Line</button>
-                      <button onClick={() => setChartType('bar')} className={`px-3 py-1.5 rounded-lg text-sm ${chartType === 'bar' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>Bar</button>
+                      <button onClick={() => setChartType('line')} className={`px-3 py-1.5 rounded-lg text-sm ${chartType === 'line' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>Line</button>
+                      <button onClick={() => setChartType('bar')} className={`px-3 py-1.5 rounded-lg text-sm ${chartType === 'bar' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>Bar</button>
                     </div>
                   </div>
                   
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={filteredData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                        <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} interval="preserveStartEnd" />
-                        {activeYAxes.has('currency') && <YAxis yAxisId="currency" orientation="left" tick={{ fontSize: 11 }} tickFormatter={formatCurrency} />}
-                        {activeYAxes.has('count') && <YAxis yAxisId="count" orientation="right" tick={{ fontSize: 11 }} tickFormatter={formatNumber} />}
-                        {activeYAxes.has('ratio') && !activeYAxes.has('count') && <YAxis yAxisId="ratio" orientation="right" tick={{ fontSize: 11 }} />}
-                        <Tooltip formatter={(value, name) => { const config = Object.values(metricConfig).find(c => c.label === name); return config ? config.format(value) : value; }} labelFormatter={(d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} />
-                        <Legend />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} interval="preserveStartEnd" />
+                        {activeYAxes.has('currency') && <YAxis yAxisId="currency" orientation="left" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={formatCurrency} />}
+                        {activeYAxes.has('count') && <YAxis yAxisId="count" orientation="right" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={formatNumber} />}
+                        {activeYAxes.has('ratio') && !activeYAxes.has('count') && <YAxis yAxisId="ratio" orientation="right" tick={{ fontSize: 11, fill: '#94a3b8' }} />}
+                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} labelStyle={{ color: '#e2e8f0' }} itemStyle={{ color: '#e2e8f0' }} formatter={(value, name) => { const config = Object.values(metricConfig).find(c => c.label === name); return config ? config.format(value) : value; }} labelFormatter={(d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} />
+                        <Legend wrapperStyle={{ color: '#94a3b8' }} />
                         {selectedMetrics.map(metric => (
                           chartType === 'line' ? <Line key={metric} type="monotone" dataKey={metric} stroke={metricConfig[metric].color} strokeWidth={2} dot={false} name={metricConfig[metric].label} yAxisId={metricConfig[metric].yAxisId} /> : <Bar key={metric} dataKey={metric} fill={metricConfig[metric].color} name={metricConfig[metric].label} yAxisId={metricConfig[metric].yAxisId} radius={[2, 2, 0, 0]} opacity={0.8} />
                         ))}
@@ -1726,33 +1744,33 @@ export default function FetchDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <button onClick={() => toggleSection('dailyData')} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center gap-2"><Calendar size={20} className="text-purple-600" /><span className="font-semibold text-slate-800">Daily Performance</span><span className="text-sm text-slate-500">({filteredData.length} days)</span></div>
-                    {expandedSections.dailyData ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 overflow-hidden">
+                  <button onClick={() => toggleSection('dailyData')} className="w-full flex items-center justify-between p-4 hover:bg-slate-800 transition-colors">
+                    <div className="flex items-center gap-2"><Calendar size={20} className="text-purple-400" /><span className="font-semibold text-white">Daily Performance</span><span className="text-sm text-slate-500">({filteredData.length} days)</span></div>
+                    {expandedSections.dailyData ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
                   </button>
                   {expandedSections.dailyData && (
-                    <div className="border-t border-slate-200 overflow-x-auto max-h-96">
+                    <div className="border-t border-slate-700 overflow-x-auto max-h-96">
                       <table className="w-full text-sm">
-                        <thead className="bg-slate-50 sticky top-0">
+                        <thead className="bg-slate-800 sticky top-0">
                           <tr>
-                            <th className="text-left p-3 font-medium text-slate-600">Date</th>
-                            <th className="text-right p-3 font-medium text-slate-600">Sales</th>
-                            <th className="text-right p-3 font-medium text-slate-600">Spend</th>
-                            <th className="text-right p-3 font-medium text-slate-600">Units</th>
-                            <th className="text-right p-3 font-medium text-slate-600">Buyers</th>
-                            <th className="text-right p-3 font-medium text-slate-600">ROAS</th>
+                            <th className="text-left p-3 font-medium text-slate-400">Date</th>
+                            <th className="text-right p-3 font-medium text-slate-400">Sales</th>
+                            <th className="text-right p-3 font-medium text-slate-400">Spend</th>
+                            <th className="text-right p-3 font-medium text-slate-400">Units</th>
+                            <th className="text-right p-3 font-medium text-slate-400">Buyers</th>
+                            <th className="text-right p-3 font-medium text-slate-400">ROAS</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredData.map((row, i) => (
-                            <tr key={i} className="border-t border-slate-100 hover:bg-slate-50">
-                              <td className="p-3 font-medium text-slate-800">{new Date(row.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
-                              <td className="p-3 text-right">{formatCurrency(row.sales)}</td>
-                              <td className="p-3 text-right">{formatCurrency(row.cost)}</td>
-                              <td className="p-3 text-right">{formatNumber(row.units)}</td>
-                              <td className="p-3 text-right">{formatNumber(row.buyers)}</td>
-                              <td className="p-3 text-right font-semibold text-blue-600">{row.roas.toFixed(2)}x</td>
+                            <tr key={i} className="border-t border-slate-800 hover:bg-slate-800">
+                              <td className="p-3 font-medium text-white">{new Date(row.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
+                              <td className="p-3 text-right text-slate-300">{formatCurrency(row.sales)}</td>
+                              <td className="p-3 text-right text-slate-300">{formatCurrency(row.cost)}</td>
+                              <td className="p-3 text-right text-slate-300">{formatNumber(row.units)}</td>
+                              <td className="p-3 text-right text-slate-300">{formatNumber(row.buyers)}</td>
+                              <td className="p-3 text-right font-semibold text-blue-400">{row.roas.toFixed(2)}x</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1769,10 +1787,10 @@ export default function FetchDashboard() {
                 <SpendThresholdWarning offers={selectedCampaign.offers} />
 
                 {/* Campaign Header + Budget Progress */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
                   <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                     <div>
-                      <h2 className="text-xl font-bold text-slate-800 mb-1">{selectedCampaign.campaignName}</h2>
+                      <h2 className="text-xl font-bold text-white mb-1">{selectedCampaign.campaignName}</h2>
                       <p className="text-slate-500">{formatDateShort(pacingMetrics.startDate)} → {formatDateShort(pacingMetrics.targetEndDate)}</p>
                     </div>
                     <PacingBadge status={pacingMetrics.status} daysVariance={pacingMetrics.daysVariance} />
@@ -1780,30 +1798,30 @@ export default function FetchDashboard() {
 
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-slate-600">Budget Progress</span>
-                      <span className="font-medium">{formatCurrency(pacingMetrics.totalSpent)} / {formatCurrency(pacingMetrics.totalBudget)}</span>
+                      <span className="text-slate-400">Budget Progress</span>
+                      <span className="font-medium text-white">{formatCurrency(pacingMetrics.totalSpent)} / {formatCurrency(pacingMetrics.totalBudget)}</span>
                     </div>
-                    <div className="h-4 bg-slate-100 rounded-full overflow-hidden relative">
+                    <div className="h-4 bg-slate-800 rounded-full overflow-hidden relative">
                       <div className={`h-full rounded-full transition-all ${pacingMetrics.status === 'early' ? 'bg-rose-500' : pacingMetrics.status === 'late' ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(pacingMetrics.budgetConsumedPct, 100)}%` }} />
-                      <div className="absolute top-0 h-full w-0.5 bg-slate-600" style={{ left: `${Math.min(pacingMetrics.timeElapsedPct, 100)}%` }} title="Time elapsed marker" />
+                      <div className="absolute top-0 h-full w-0.5 bg-white/50" style={{ left: `${Math.min(pacingMetrics.timeElapsedPct, 100)}%` }} title="Time elapsed marker" />
                     </div>
                     <div className="flex justify-between text-xs mt-1 text-slate-500">
                       <span>{pacingMetrics.budgetConsumedPct.toFixed(1)}% spent</span>
                       <span>{pacingMetrics.timeElapsedPct.toFixed(1)}% of time elapsed</span>
                     </div>
-                    <div className="flex items-center justify-end gap-4 mt-2 text-xs text-slate-400">
+                    <div className="flex items-center justify-end gap-4 mt-2 text-xs text-slate-500">
                       <div className="flex items-center gap-1.5"><div className={`w-6 h-2 rounded ${pacingMetrics.status === 'early' ? 'bg-rose-500' : pacingMetrics.status === 'late' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div><span>Budget spent</span></div>
-                      <div className="flex items-center gap-1.5"><div className="w-0.5 h-3 bg-slate-600"></div><span>Time elapsed</span></div>
+                      <div className="flex items-center gap-1.5"><div className="w-0.5 h-3 bg-white/50"></div><span>Time elapsed</span></div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
-                    <Info size={18} className="text-slate-400" />
+                  <div className="flex items-center gap-4 p-4 bg-slate-800 rounded-lg">
+                    <Info size={18} className="text-slate-500" />
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-slate-600 mb-1">Override Target End Date</label>
-                      <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Override Target End Date</label>
+                      <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} className="px-3 py-2 border border-slate-600 rounded-lg text-sm bg-slate-800 text-white" />
                     </div>
-                    {customEndDate && <button onClick={() => setCustomEndDate('')} className="text-sm text-slate-500 hover:text-slate-700">Reset</button>}
+                    {customEndDate && <button onClick={() => setCustomEndDate('')} className="text-sm text-slate-500 hover:text-slate-300">Reset</button>}
                   </div>
                 </div>
 
@@ -1816,17 +1834,17 @@ export default function FetchDashboard() {
                 </div>
 
                 {/* Pacing Projection - Full Width */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                  <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Target className="text-blue-600" size={20} />Pacing Projection</h3>
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
+                  <h3 className="font-semibold text-white mb-4 flex items-center gap-2"><Target className="text-blue-400" size={20} />Pacing Projection</h3>
 
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-5 border border-blue-200">
+                  <div className="bg-gradient-to-r from-blue-950/40 to-indigo-950/40 rounded-xl p-5 mb-5 border border-blue-800/50">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                       <div>
-                        <div className="text-sm text-blue-600 font-medium mb-1">Projected Total Spend</div>
-                        <div className="text-3xl font-bold text-blue-800">{formatCurrency(pacingMetrics.projectedTotalSpend)}</div>
+                        <div className="text-sm text-blue-400 font-medium mb-1">Projected Total Spend</div>
+                        <div className="text-3xl font-bold text-white">{formatCurrency(pacingMetrics.projectedTotalSpend)}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm text-blue-600 font-medium mb-1">vs Budget ({formatCurrency(pacingMetrics.totalBudget)})</div>
+                        <div className="text-sm text-blue-400 font-medium mb-1">vs Budget ({formatCurrency(pacingMetrics.totalBudget)})</div>
                         <div className={`text-2xl font-bold ${pacingMetrics.projectedTotalSpend > pacingMetrics.totalBudget * 1.02 ? 'text-rose-600' : pacingMetrics.projectedTotalSpend < pacingMetrics.totalBudget * 0.9 ? 'text-amber-600' : 'text-emerald-600'}`}>
                           {pacingMetrics.projectedTotalSpend >= pacingMetrics.totalBudget ? '+' : ''}{formatCurrency(pacingMetrics.projectedTotalSpend - pacingMetrics.totalBudget)}
                         </div>
@@ -1835,59 +1853,59 @@ export default function FetchDashboard() {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Budget Remaining</div><div className="font-bold text-slate-800">{formatCurrency(pacingMetrics.remainingBudget)}</div></div>
-                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Days Until Exhausted</div><div className="font-bold text-slate-800">{pacingMetrics.daysUntilBudgetExhausted === Infinity ? 'N/A' : `${Math.round(pacingMetrics.daysUntilBudgetExhausted)} days`}</div></div>
-                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Projected End Date</div><div className="font-bold text-slate-800">{formatDateShort(pacingMetrics.projectedEndDate)}</div></div>
-                    <div className="p-3 bg-slate-50 rounded-lg"><div className="text-xs text-slate-500 mb-1">Variance vs Target</div><div className={`font-bold ${pacingMetrics.daysVariance < 0 ? 'text-rose-600' : pacingMetrics.daysVariance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{pacingMetrics.daysVariance > 0 ? '+' : ''}{Math.round(pacingMetrics.daysVariance)} days</div></div>
+                    <div className="p-3 bg-slate-800 rounded-lg"><div className="text-xs text-slate-500 mb-1">Budget Remaining</div><div className="font-bold text-white">{formatCurrency(pacingMetrics.remainingBudget)}</div></div>
+                    <div className="p-3 bg-slate-800 rounded-lg"><div className="text-xs text-slate-500 mb-1">Days Until Exhausted</div><div className="font-bold text-white">{pacingMetrics.daysUntilBudgetExhausted === Infinity ? 'N/A' : `${Math.round(pacingMetrics.daysUntilBudgetExhausted)} days`}</div></div>
+                    <div className="p-3 bg-slate-800 rounded-lg"><div className="text-xs text-slate-500 mb-1">Projected End Date</div><div className="font-bold text-white">{formatDateShort(pacingMetrics.projectedEndDate)}</div></div>
+                    <div className="p-3 bg-slate-800 rounded-lg"><div className="text-xs text-slate-500 mb-1">Variance vs Target</div><div className={`font-bold ${pacingMetrics.daysVariance < 0 ? 'text-rose-400' : pacingMetrics.daysVariance > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{pacingMetrics.daysVariance > 0 ? '+' : ''}{Math.round(pacingMetrics.daysVariance)} days</div></div>
                   </div>
 
-                  {pacingMetrics.status === 'early' && <div className="mt-4 p-3 bg-rose-50 rounded-lg border border-rose-200"><p className="text-sm text-rose-700"><strong>Budget will exhaust early.</strong> Consider requesting additional budget or reducing targeting.</p></div>}
-                  {pacingMetrics.status === 'late' && <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200"><p className="text-sm text-amber-700"><strong>Under pacing.</strong> ~{formatCurrency(pacingMetrics.totalBudget - pacingMetrics.projectedTotalSpend)} may remain unspent. Consider expanding audience or increasing offer value.</p></div>}
+                  {pacingMetrics.status === 'early' && <div className="mt-4 p-3 bg-rose-950/30 rounded-lg border border-rose-800/50"><p className="text-sm text-rose-400"><strong>Budget will exhaust early.</strong> Consider requesting additional budget or reducing targeting.</p></div>}
+                  {pacingMetrics.status === 'late' && <div className="mt-4 p-3 bg-amber-950/30 rounded-lg border border-amber-800/50"><p className="text-sm text-amber-400"><strong>Under pacing.</strong> ~{formatCurrency(pacingMetrics.totalBudget - pacingMetrics.projectedTotalSpend)} may remain unspent. Consider expanding audience or increasing offer value.</p></div>}
                 </div>
 
                 {/* Cumulative Spend Chart */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                  <h3 className="font-semibold text-slate-800 mb-4">Cumulative Spend vs Expected Pace</h3>
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
+                  <h3 className="font-semibold text-white mb-4">Cumulative Spend vs Expected Pace</h3>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={cumulativeSpendData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                        <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} interval="preserveStartEnd" />
-                        <YAxis tick={{ fontSize: 11 }} tickFormatter={formatCurrency} />
-                        <Tooltip formatter={(value, name) => [formatCurrency(value), name]} labelFormatter={(d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} />
-                        <Legend />
-                        <ReferenceLine y={pacingMetrics.totalBudget} stroke="#94A3B8" strokeDasharray="5 5" label={{ value: 'Budget', position: 'right' }} />
-                        <Area type="monotone" dataKey="expected" name="Expected Pace" stroke="#94A3B8" fill="#F1F5F9" strokeDasharray="5 5" />
-                        <Area type="monotone" dataKey="actual" name="Actual Spend" stroke="#3B82F6" fill="#DBEAFE" strokeWidth={2} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} interval="preserveStartEnd" />
+                        <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={formatCurrency} />
+                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} labelStyle={{ color: '#e2e8f0' }} itemStyle={{ color: '#e2e8f0' }} formatter={(value, name) => [formatCurrency(value), name]} labelFormatter={(d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} />
+                        <Legend wrapperStyle={{ color: '#94a3b8' }} />
+                        <ReferenceLine y={pacingMetrics.totalBudget} stroke="#94A3B8" strokeDasharray="5 5" label={{ value: 'Budget', position: 'right', fill: '#94a3b8' }} />
+                        <Area type="monotone" dataKey="expected" name="Expected Pace" stroke="#94A3B8" fill="#1e293b" strokeDasharray="5 5" />
+                        <Area type="monotone" dataKey="actual" name="Actual Spend" stroke="#3B82F6" fill="rgba(59,130,246,0.15)" strokeWidth={2} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
                 {/* Extension Calculator - Separate Section */}
-                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-sm border border-indigo-200 p-6 mb-6">
+                <div className="bg-gradient-to-br from-indigo-950/40 to-purple-950/40 rounded-2xl shadow-sm border border-indigo-800/50 p-6 mb-6">
                   <div className="flex items-center gap-2 mb-1">
-                    <Calculator className="text-indigo-600" size={20} />
-                    <h3 className="font-semibold text-indigo-800">Campaign Extension Calculator</h3>
+                    <Calculator className="text-indigo-400" size={20} />
+                    <h3 className="font-semibold text-indigo-300">Campaign Extension Calculator</h3>
                   </div>
-                  <p className="text-sm text-indigo-600 mb-4">Need to extend? Calculate the additional budget required based on recent daily spend.</p>
+                  <p className="text-sm text-indigo-400 mb-4">Need to extend? Calculate the additional budget required based on recent daily spend.</p>
                   <div className="flex items-center gap-3 mb-6">
-                    <span className="text-sm font-medium text-indigo-700">Extend by</span>
-                    <input type="number" min="1" max="365" value={extensionDays} onChange={(e) => setExtensionDays(parseInt(e.target.value) || 1)} className="w-20 px-3 py-2 border border-indigo-300 rounded-lg text-center font-medium" />
-                    <select value={extensionType} onChange={(e) => setExtensionType(e.target.value)} className="px-3 py-2 border border-indigo-300 rounded-lg font-medium">
+                    <span className="text-sm font-medium text-indigo-300">Extend by</span>
+                    <input type="number" min="1" max="365" value={extensionDays} onChange={(e) => setExtensionDays(parseInt(e.target.value) || 1)} className="w-20 px-3 py-2 border border-slate-600 rounded-lg text-center font-medium bg-slate-800 text-white" />
+                    <select value={extensionType} onChange={(e) => setExtensionType(e.target.value)} className="px-3 py-2 border border-slate-600 rounded-lg font-medium bg-slate-800 text-white">
                       <option value="days">Days</option>
                       <option value="weeks">Weeks</option>
                       <option value="months">Months</option>
                     </select>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-indigo-200">
+                  <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
                     <div className="text-center mb-4">
                       <div className="text-sm text-slate-500 mb-1">Additional Budget Required</div>
-                      <div className="text-4xl font-bold text-indigo-700">{formatCurrency(pacingMetrics.extensionCost)}</div>
+                      <div className="text-4xl font-bold text-indigo-400">{formatCurrency(pacingMetrics.extensionCost)}</div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="text-center p-2 bg-indigo-50 rounded-lg"><div className="text-indigo-600">New End Date</div><div className="font-semibold text-indigo-800">{formatDateShort(pacingMetrics.newEndDate)}</div></div>
-                      <div className="text-center p-2 bg-indigo-50 rounded-lg"><div className="text-indigo-600">Based On</div><div className="font-semibold text-indigo-800">{formatCurrency(pacingMetrics.recentAvgSpend)}/day</div></div>
+                      <div className="text-center p-2 bg-indigo-950/30 rounded-lg"><div className="text-indigo-400">New End Date</div><div className="font-semibold text-indigo-300">{formatDateShort(pacingMetrics.newEndDate)}</div></div>
+                      <div className="text-center p-2 bg-indigo-950/30 rounded-lg"><div className="text-indigo-400">Based On</div><div className="font-semibold text-indigo-300">{formatCurrency(pacingMetrics.recentAvgSpend)}/day</div></div>
                     </div>
                   </div>
                 </div>
@@ -1924,12 +1942,12 @@ export default function FetchDashboard() {
                   <p className="opacity-90">Measure the impact of promotional periods by comparing pre, during, and post performance.</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                  <h3 className="font-semibold text-slate-800 mb-4">Configure Promo Period</h3>
-                  
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
+                  <h3 className="font-semibold text-white mb-4">Configure Promo Period</h3>
+
                   <div className="flex flex-wrap items-end gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-slate-600 mb-1">Promotion Type</label>
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Promotion Type</label>
                       <div className="flex gap-2">
                         {[
                           { id: 'pops', label: 'Pops', icon: Star },
@@ -1938,7 +1956,7 @@ export default function FetchDashboard() {
                           <button
                             key={type.id}
                             onClick={() => setPromoType(type.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${promoType === type.id ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${promoType === type.id ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                           >
                             <type.icon size={16} />
                             {type.label}
@@ -1946,15 +1964,15 @@ export default function FetchDashboard() {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-slate-600 mb-1">Promo Start Date</label>
-                      <input type="date" value={promoStart} onChange={(e) => setPromoStart(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Promo Start Date</label>
+                      <input type="date" value={promoStart} onChange={(e) => setPromoStart(e.target.value)} className="px-3 py-2 border border-slate-600 rounded-lg text-sm bg-slate-800 text-white" />
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-slate-600 mb-1">Promo End Date</label>
-                      <input type="date" value={promoEnd} onChange={(e) => setPromoEnd(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Promo End Date</label>
+                      <input type="date" value={promoEnd} onChange={(e) => setPromoEnd(e.target.value)} className="px-3 py-2 border border-slate-600 rounded-lg text-sm bg-slate-800 text-white" />
                     </div>
                     
                     {promoStart && promoEnd && (
@@ -1987,45 +2005,45 @@ export default function FetchDashboard() {
                     </div>
 
                     {/* Lift Summary */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                      <h3 className="font-semibold text-slate-800 mb-4">Promo Lift Summary</h3>
+                    <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
+                      <h3 className="font-semibold text-white mb-4">Promo Lift Summary</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className={`p-4 rounded-xl ${promoAnalysis.during.salesChange >= 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200'}`}>
-                          <div className="text-sm text-slate-600 mb-1">Sales Lift (During)</div>
-                          <div className={`text-2xl font-bold ${promoAnalysis.during.salesChange >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                        <div className={`p-4 rounded-xl ${promoAnalysis.during.salesChange >= 0 ? 'bg-emerald-950/30 border border-emerald-800/50' : 'bg-rose-950/30 border border-rose-800/50'}`}>
+                          <div className="text-sm text-slate-400 mb-1">Sales Lift (During)</div>
+                          <div className={`text-2xl font-bold ${promoAnalysis.during.salesChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {promoAnalysis.during.salesChange >= 0 ? '+' : ''}{promoAnalysis.during.salesChange.toFixed(1)}%
                           </div>
                         </div>
-                        <div className={`p-4 rounded-xl ${promoAnalysis.during.buyersChange >= 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200'}`}>
-                          <div className="text-sm text-slate-600 mb-1">Buyer Lift (During)</div>
-                          <div className={`text-2xl font-bold ${promoAnalysis.during.buyersChange >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                        <div className={`p-4 rounded-xl ${promoAnalysis.during.buyersChange >= 0 ? 'bg-emerald-950/30 border border-emerald-800/50' : 'bg-rose-950/30 border border-rose-800/50'}`}>
+                          <div className="text-sm text-slate-400 mb-1">Buyer Lift (During)</div>
+                          <div className={`text-2xl font-bold ${promoAnalysis.during.buyersChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {promoAnalysis.during.buyersChange >= 0 ? '+' : ''}{promoAnalysis.during.buyersChange.toFixed(1)}%
                           </div>
                         </div>
-                        <div className={`p-4 rounded-xl ${promoAnalysis.post.salesChange >= 0 ? 'bg-blue-50 border border-blue-200' : 'bg-amber-50 border border-amber-200'}`}>
-                          <div className="text-sm text-slate-600 mb-1">Sales Retention (Post)</div>
-                          <div className={`text-2xl font-bold ${promoAnalysis.post.salesChange >= 0 ? 'text-blue-700' : 'text-amber-700'}`}>
+                        <div className={`p-4 rounded-xl ${promoAnalysis.post.salesChange >= 0 ? 'bg-blue-950/30 border border-blue-800/50' : 'bg-amber-950/30 border border-amber-800/50'}`}>
+                          <div className="text-sm text-slate-400 mb-1">Sales Retention (Post)</div>
+                          <div className={`text-2xl font-bold ${promoAnalysis.post.salesChange >= 0 ? 'text-blue-400' : 'text-amber-400'}`}>
                             {promoAnalysis.post.salesChange >= 0 ? '+' : ''}{promoAnalysis.post.salesChange.toFixed(1)}%
                           </div>
                         </div>
-                        <div className={`p-4 rounded-xl ${promoAnalysis.post.buyersChange >= 0 ? 'bg-blue-50 border border-blue-200' : 'bg-amber-50 border border-amber-200'}`}>
-                          <div className="text-sm text-slate-600 mb-1">Buyer Retention (Post)</div>
-                          <div className={`text-2xl font-bold ${promoAnalysis.post.buyersChange >= 0 ? 'text-blue-700' : 'text-amber-700'}`}>
+                        <div className={`p-4 rounded-xl ${promoAnalysis.post.buyersChange >= 0 ? 'bg-blue-950/30 border border-blue-800/50' : 'bg-amber-950/30 border border-amber-800/50'}`}>
+                          <div className="text-sm text-slate-400 mb-1">Buyer Retention (Post)</div>
+                          <div className={`text-2xl font-bold ${promoAnalysis.post.buyersChange >= 0 ? 'text-blue-400' : 'text-amber-400'}`}>
                             {promoAnalysis.post.buyersChange >= 0 ? '+' : ''}{promoAnalysis.post.buyersChange.toFixed(1)}%
                           </div>
                         </div>
                       </div>
-                      
+
                       {promoAnalysis.post.salesChange > 0 && (
-                        <div className="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                          <p className="text-sm text-emerald-700">
+                        <div className="mt-4 p-3 bg-emerald-950/30 rounded-lg border border-emerald-800/50">
+                          <p className="text-sm text-emerald-400">
                             <strong>✓ Strong retention!</strong> Sales stayed elevated post-promo, indicating the promotion drove lasting behavior change.
                           </p>
                         </div>
                       )}
                       {promoAnalysis.post.salesChange < -10 && (
-                        <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                          <p className="text-sm text-amber-700">
+                        <div className="mt-4 p-3 bg-amber-950/30 rounded-lg border border-amber-800/50">
+                          <p className="text-sm text-amber-400">
                             <strong>⚠️ Post-promo drop-off.</strong> Sales decreased after the promo ended. Consider follow-up offers to maintain momentum.
                           </p>
                         </div>
@@ -2033,29 +2051,29 @@ export default function FetchDashboard() {
                     </div>
 
                     {/* Timeline Chart */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                      <h3 className="font-semibold text-slate-800 mb-4">Daily Sales Timeline</h3>
+                    <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6">
+                      <h3 className="font-semibold text-white mb-4">Daily Sales Timeline</h3>
                       <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
                           <ComposedChart data={promoAnalysis.chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                            <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} interval="preserveStartEnd" />
-                            <YAxis tick={{ fontSize: 11 }} tickFormatter={formatCurrency} />
-                            <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} />
-                            <Legend />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} interval="preserveStartEnd" />
+                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={formatCurrency} />
+                            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }} labelStyle={{ color: '#e2e8f0' }} itemStyle={{ color: '#e2e8f0' }} formatter={(value) => formatCurrency(value)} labelFormatter={(d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} />
+                            <Legend wrapperStyle={{ color: '#94a3b8' }} />
                             {/* Background shading for promo period */}
-                            <ReferenceLine x={promoStart} stroke="#9333EA" strokeWidth={2} label={{ value: 'Promo Start', position: 'top' }} />
-                            <ReferenceLine x={promoEnd} stroke="#9333EA" strokeWidth={2} label={{ value: 'Promo End', position: 'top' }} />
-                            <Area type="monotone" dataKey="sales" name="Daily Sales" stroke="#3B82F6" fill="#DBEAFE" strokeWidth={2} />
+                            <ReferenceLine x={promoStart} stroke="#9333EA" strokeWidth={2} label={{ value: 'Promo Start', position: 'top', fill: '#c084fc' }} />
+                            <ReferenceLine x={promoEnd} stroke="#9333EA" strokeWidth={2} label={{ value: 'Promo End', position: 'top', fill: '#c084fc' }} />
+                            <Area type="monotone" dataKey="sales" name="Daily Sales" stroke="#3B82F6" fill="rgba(59,130,246,0.15)" strokeWidth={2} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-                    <Sparkles size={48} className="text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-600">Select promo dates above to analyze</h3>
+                  <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-12 text-center">
+                    <Sparkles size={48} className="text-slate-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-slate-400">Select promo dates above to analyze</h3>
                     <p className="text-slate-500 mt-2">Choose the start and end dates of your Pops or Fetch Topia promotion</p>
                   </div>
                 )}
@@ -2093,20 +2111,20 @@ export default function FetchDashboard() {
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h3 className="font-semibold text-slate-800 mb-4">Conversion Funnel</h3>
+                  <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6">
+                    <h3 className="font-semibold text-white mb-4">Conversion Funnel</h3>
                     <ConversionFunnel data={[
                       { name: 'Audience Reached', value: conversionMetrics.totals.audience, color: '#94A3B8' },
                       { name: 'Buyers (Started)', value: conversionMetrics.totals.buyers, color: '#3B82F6' },
                       { name: 'Redeemers (Completed)', value: conversionMetrics.totals.redeemers, color: '#10B981' }
                     ]} />
-                    <div className="mt-4 pt-4 border-t border-slate-100">
-                      <div className="flex justify-between text-sm"><span className="text-slate-600">Overall Completion Rate</span><span className="font-bold text-emerald-600">{conversionMetrics.totals.avgCompletionRate.toFixed(1)}%</span></div>
+                    <div className="mt-4 pt-4 border-t border-slate-800">
+                      <div className="flex justify-between text-sm"><span className="text-slate-400">Overall Completion Rate</span><span className="font-bold text-emerald-400">{conversionMetrics.totals.avgCompletionRate.toFixed(1)}%</span></div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h3 className="font-semibold text-slate-800 mb-4">Buyer vs Redeemer Behavior</h3>
+                  <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6">
+                    <h3 className="font-semibold text-white mb-4">Buyer vs Redeemer Behavior</h3>
                     <div className="space-y-4">
                       {[
                         { label: '$ Per Trip', buyer: conversionMetrics.totals.buyerValuePerTrip, redeemer: conversionMetrics.totals.redeemerValuePerTrip, format: formatCurrency },
@@ -2114,11 +2132,11 @@ export default function FetchDashboard() {
                         { label: 'Trips/Person', buyer: conversionMetrics.totals.tripsPerBuyer, redeemer: conversionMetrics.totals.tripsPerRedeemer, format: (v) => v.toFixed(1) }
                       ].map((row, i) => (
                         <div key={i} className="flex items-center gap-4">
-                          <div className="w-28 text-sm text-slate-600">{row.label}</div>
+                          <div className="w-28 text-sm text-slate-400">{row.label}</div>
                           <div className="flex-1 flex items-center gap-2">
-                            <div className="flex-1 bg-blue-100 rounded-lg px-3 py-2 text-center"><div className="text-xs text-blue-600">Buyers</div><div className="font-semibold text-blue-800">{row.format(row.buyer)}</div></div>
-                            <div className="flex-1 bg-emerald-100 rounded-lg px-3 py-2 text-center"><div className="text-xs text-emerald-600">Redeemers</div><div className="font-semibold text-emerald-800">{row.format(row.redeemer)}</div></div>
-                            {row.redeemer > row.buyer && <div className="text-xs text-emerald-600 font-medium">+{(((row.redeemer - row.buyer) / row.buyer) * 100).toFixed(0)}%</div>}
+                            <div className="flex-1 bg-blue-950/30 rounded-lg px-3 py-2 text-center"><div className="text-xs text-blue-400">Buyers</div><div className="font-semibold text-blue-300">{row.format(row.buyer)}</div></div>
+                            <div className="flex-1 bg-emerald-950/30 rounded-lg px-3 py-2 text-center"><div className="text-xs text-emerald-400">Redeemers</div><div className="font-semibold text-emerald-300">{row.format(row.redeemer)}</div></div>
+                            {row.redeemer > row.buyer && <div className="text-xs text-emerald-400 font-medium">+{(((row.redeemer - row.buyer) / row.buyer) * 100).toFixed(0)}%</div>}
                           </div>
                         </div>
                       ))}
@@ -2127,45 +2145,45 @@ export default function FetchDashboard() {
                 </div>
 
                 {/* Offer Table with CAC Context */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="p-4 border-b border-slate-200">
-                    <h3 className="font-semibold text-slate-800">Offer Performance by Segment</h3>
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 overflow-hidden">
+                  <div className="p-4 border-b border-slate-700">
+                    <h3 className="font-semibold text-white">Offer Performance by Segment</h3>
                     <p className="text-sm text-slate-500 mt-1">CAC highlighted for acquisition segments (NCE/Competitive) only</p>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="bg-slate-50">
+                      <thead className="bg-slate-800">
                         <tr>
-                          <th className="text-left p-3 font-medium text-slate-600">Offer</th>
-                          <th className="text-left p-3 font-medium text-slate-600">Tactic</th>
-                          <th className="text-right p-3 font-medium text-slate-600">Buyers</th>
-                          <th className="text-right p-3 font-medium text-slate-600">Cost</th>
-                          <th className="text-right p-3 font-medium text-slate-600">CAC</th>
-                          <th className="text-right p-3 font-medium text-slate-600">ROAS</th>
-                          <th className="text-right p-3 font-medium text-slate-600">Sales Lift</th>
+                          <th className="text-left p-3 font-medium text-slate-400">Offer</th>
+                          <th className="text-left p-3 font-medium text-slate-400">Tactic</th>
+                          <th className="text-right p-3 font-medium text-slate-400">Buyers</th>
+                          <th className="text-right p-3 font-medium text-slate-400">Cost</th>
+                          <th className="text-right p-3 font-medium text-slate-400">CAC</th>
+                          <th className="text-right p-3 font-medium text-slate-400">ROAS</th>
+                          <th className="text-right p-3 font-medium text-slate-400">Sales Lift</th>
                         </tr>
                       </thead>
                       <tbody>
                         {conversionMetrics.offers.map((offer, i) => (
-                          <tr key={i} className="border-t border-slate-100 hover:bg-slate-50">
-                            <td className="p-3 font-medium text-slate-800 max-w-[180px] truncate">{offer['Offer Name']}</td>
+                          <tr key={i} className="border-t border-slate-800 hover:bg-slate-800">
+                            <td className="p-3 font-medium text-white max-w-[180px] truncate">{offer['Offer Name']}</td>
                             <td className="p-3">
-                              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${offer.isAcquisitionTactic ? 'bg-blue-100 text-blue-700' : offer.isBrandBuyerTactic ? 'bg-slate-100 text-slate-600' : 'bg-slate-100 text-slate-600'}`}>
+                              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${offer.isAcquisitionTactic ? 'bg-blue-950/50 text-blue-400' : offer.isBrandBuyerTactic ? 'bg-slate-800 text-slate-400' : 'bg-slate-800 text-slate-400'}`}>
                                 {offer.isAcquisitionTactic && <Users size={12} />}
                                 {offer['Tactic']}
                               </span>
                             </td>
-                            <td className="p-3 text-right">{formatNumber(offer.buyersNum)}</td>
-                            <td className="p-3 text-right">{formatCurrency(offer.costNum)}</td>
+                            <td className="p-3 text-right text-slate-300">{formatNumber(offer.buyersNum)}</td>
+                            <td className="p-3 text-right text-slate-300">{formatCurrency(offer.costNum)}</td>
                             <td className="p-3 text-right">
                               {offer.isAcquisitionTactic ? (
-                                <span className="font-semibold text-rose-600">{formatCurrency(offer.cac)}</span>
+                                <span className="font-semibold text-rose-400">{formatCurrency(offer.cac)}</span>
                               ) : (
-                                <span className="text-slate-400 italic" title="CAC not meaningful for brand buyer segments">N/A</span>
+                                <span className="text-slate-600 italic" title="CAC not meaningful for brand buyer segments">N/A</span>
                               )}
                             </td>
-                            <td className="p-3 text-right font-semibold text-cyan-600">{offer.roasNum.toFixed(2)}x</td>
-                            <td className="p-3 text-right text-emerald-600">{offer.salesLiftNum.toFixed(1)}%</td>
+                            <td className="p-3 text-right font-semibold text-cyan-400">{offer.roasNum.toFixed(2)}x</td>
+                            <td className="p-3 text-right text-emerald-400">{offer.salesLiftNum.toFixed(1)}%</td>
                           </tr>
                         ))}
                       </tbody>
@@ -2178,11 +2196,11 @@ export default function FetchDashboard() {
             {/* OFFER DEEP DIVE TAB */}
             {activeTab === 'offers' && selectedCampaign.offers.length > 0 && (
               <>
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                  <h3 className="font-semibold text-slate-800 mb-3">Select an Offer</h3>
+                <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6 mb-6">
+                  <h3 className="font-semibold text-white mb-3">Select an Offer</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedCampaign.offers.map((offer, i) => (
-                      <button key={i} onClick={() => setSelectedOffer(selectedOffer === offer ? null : offer)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedOffer === offer ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                      <button key={i} onClick={() => setSelectedOffer(selectedOffer === offer ? null : offer)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedOffer === offer ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>
                         {offer['Tactic']}
                       </button>
                     ))}
@@ -2228,12 +2246,12 @@ export default function FetchDashboard() {
                     </div>
 
                     {selectedOffer.isBrandBuyerTactic && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                      <div className="bg-blue-950/30 border border-blue-800/50 rounded-xl p-4 mb-6">
                         <div className="flex items-start gap-3">
-                          <Info className="text-blue-600 mt-0.5 flex-shrink-0" size={20} />
+                          <Info className="text-blue-400 mt-0.5 flex-shrink-0" size={20} />
                           <div>
-                            <div className="font-semibold text-blue-800">Brand Buyer Segment — Existing Customers</div>
-                            <p className="text-sm text-blue-700">
+                            <div className="font-semibold text-blue-300">Brand Buyer Segment — Existing Customers</div>
+                            <p className="text-sm text-blue-400">
                               This targets existing brand buyers. <strong>Cost-per-buyer is not a true acquisition cost</strong> since these customers already purchase your brand. Focus on <strong>ROAS, Sales Lift, and basket size ($/trip)</strong> for this segment.
                             </p>
                           </div>
@@ -2242,12 +2260,12 @@ export default function FetchDashboard() {
                     )}
 
                     {selectedOffer.isAcquisitionTactic && (
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+                      <div className="bg-emerald-950/30 border border-emerald-800/50 rounded-xl p-4 mb-6">
                         <div className="flex items-start gap-3">
-                          <Target className="text-emerald-600 mt-0.5 flex-shrink-0" size={20} />
+                          <Target className="text-emerald-400 mt-0.5 flex-shrink-0" size={20} />
                           <div>
-                            <div className="font-semibold text-emerald-800">Acquisition Segment — New Customers</div>
-                            <p className="text-sm text-emerald-700">
+                            <div className="font-semibold text-emerald-300">Acquisition Segment — New Customers</div>
+                            <p className="text-sm text-emerald-400">
                               This targets new-to-brand buyers. <strong>CAC is the key efficiency metric</strong> here. Focus on <strong>CAC, engagement rate, and buyer volume</strong> to evaluate acquisition effectiveness.
                             </p>
                           </div>
@@ -2256,23 +2274,23 @@ export default function FetchDashboard() {
                     )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Users className="text-blue-600" size={20} />Buyers</h3>
+                      <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6">
+                        <h3 className="font-semibold text-white mb-4 flex items-center gap-2"><Users className="text-blue-400" size={20} />Buyers</h3>
                         <div className="space-y-3">
-                          <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-600">Count</span><span className="font-semibold">{formatNumber(selectedOffer.buyersNum)}</span></div>
-                          <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-600">Total Sales</span><span className="font-semibold">{formatCurrency(selectedOffer.buyerSalesNum)}</span></div>
-                          <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-600">Total Units</span><span className="font-semibold">{formatNumber(selectedOffer.buyerUnitsNum)}</span></div>
-                          <div className="flex justify-between py-2"><span className="text-slate-600">$ Per Trip</span><span className="font-semibold text-blue-600">{formatCurrency(selectedOffer.buyerValuePerTrip)}</span></div>
+                          <div className="flex justify-between py-2 border-b border-slate-800"><span className="text-slate-400">Count</span><span className="font-semibold text-white">{formatNumber(selectedOffer.buyersNum)}</span></div>
+                          <div className="flex justify-between py-2 border-b border-slate-800"><span className="text-slate-400">Total Sales</span><span className="font-semibold text-white">{formatCurrency(selectedOffer.buyerSalesNum)}</span></div>
+                          <div className="flex justify-between py-2 border-b border-slate-800"><span className="text-slate-400">Total Units</span><span className="font-semibold text-white">{formatNumber(selectedOffer.buyerUnitsNum)}</span></div>
+                          <div className="flex justify-between py-2"><span className="text-slate-400">$ Per Trip</span><span className="font-semibold text-blue-400">{formatCurrency(selectedOffer.buyerValuePerTrip)}</span></div>
                         </div>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><CheckCircle className="text-emerald-600" size={20} />Redeemers</h3>
+                      <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-6">
+                        <h3 className="font-semibold text-white mb-4 flex items-center gap-2"><CheckCircle className="text-emerald-400" size={20} />Redeemers</h3>
                         <div className="space-y-3">
-                          <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-600">Count</span><span className="font-semibold">{formatNumber(selectedOffer.redeemersNum)}</span></div>
-                          <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-600">Total Sales</span><span className="font-semibold">{formatCurrency(selectedOffer.redeemerSalesNum)}</span></div>
-                          <div className="flex justify-between py-2 border-b border-slate-100"><span className="text-slate-600">Total Units</span><span className="font-semibold">{formatNumber(selectedOffer.redeemerUnitsNum)}</span></div>
-                          <div className="flex justify-between py-2"><span className="text-slate-600">$ Per Trip</span><span className="font-semibold text-emerald-600">{formatCurrency(selectedOffer.redeemerValuePerTrip)}</span></div>
+                          <div className="flex justify-between py-2 border-b border-slate-800"><span className="text-slate-400">Count</span><span className="font-semibold text-white">{formatNumber(selectedOffer.redeemersNum)}</span></div>
+                          <div className="flex justify-between py-2 border-b border-slate-800"><span className="text-slate-400">Total Sales</span><span className="font-semibold text-white">{formatCurrency(selectedOffer.redeemerSalesNum)}</span></div>
+                          <div className="flex justify-between py-2 border-b border-slate-800"><span className="text-slate-400">Total Units</span><span className="font-semibold text-white">{formatNumber(selectedOffer.redeemerUnitsNum)}</span></div>
+                          <div className="flex justify-between py-2"><span className="text-slate-400">$ Per Trip</span><span className="font-semibold text-emerald-400">{formatCurrency(selectedOffer.redeemerValuePerTrip)}</span></div>
                         </div>
                       </div>
                     </div>
@@ -2280,23 +2298,25 @@ export default function FetchDashboard() {
                 )}
 
                 {!selectedOffer && (
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-                    <Target size={48} className="text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-600">Select an offer above</h3>
+                  <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 p-12 text-center">
+                    <Target size={48} className="text-slate-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-slate-400">Select an offer above</h3>
                   </div>
                 )}
               </>
             )}
           </>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><Upload size={28} className="text-blue-600" /></div>
-            <h3 className="text-xl font-semibold text-slate-800 mb-2">Upload Your Campaign Data</h3>
-            <p className="text-slate-500 mb-6 max-w-md mx-auto">Upload Fetch Rewards campaign CSV exports to get started.</p>
-            <label className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
-              <Plus size={18} /><span>Upload Campaign CSV</span>
-              <input type="file" accept=".csv" multiple onChange={handleFileUpload} className="hidden" />
-            </label>
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="bg-slate-900 rounded-2xl border border-slate-700 p-12 text-center">
+              <div className="w-16 h-16 bg-blue-950/50 rounded-full flex items-center justify-center mx-auto mb-4"><Upload size={28} className="text-blue-400" /></div>
+              <h3 className="text-xl font-semibold text-white mb-2">Upload Your Campaign Data</h3>
+              <p className="text-slate-500 mb-6 max-w-md mx-auto">Upload Fetch Rewards campaign CSV exports to get started.</p>
+              <label className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                <Plus size={18} /><span>Upload Campaign CSV</span>
+                <input type="file" accept=".csv" multiple onChange={handleFileUpload} className="hidden" />
+              </label>
+            </div>
           </div>
         )}
 
@@ -2310,7 +2330,7 @@ export default function FetchDashboard() {
             onClose={() => setShowReportModal(false)}
           />
         )}
-      </div>
+      </main>
     </div>
   );
 }

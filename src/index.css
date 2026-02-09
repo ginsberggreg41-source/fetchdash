@@ -2,23 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-color: #0f172a;
+}
+
 /* Custom scrollbar for tables */
 .overflow-x-auto::-webkit-scrollbar {
   height: 8px;
 }
 
 .overflow-x-auto::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #1e293b;
   border-radius: 4px;
 }
 
 .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #475569;
   border-radius: 4px;
 }
 
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #64748b;
+}
+
+/* Sidebar scrollbar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Smooth transitions */
@@ -44,7 +66,7 @@
     width: 100%;
     padding: 20px;
   }
-  .print\\:hidden {
+  .print\:hidden {
     display: none !important;
   }
 }
