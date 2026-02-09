@@ -181,6 +181,10 @@ function buildUserPrompt(data, analysisType, chatHistory) {
     return objectivePrompts[objective] || objectivePrompts.roas;
   }
 
+  if (analysisType === 'report') {
+    return `Write a 3-4 sentence executive summary for a client-facing campaign report. Cover overall performance (ROAS, sales), pacing status, and one key insight or recommendation. Be confident and specific — this will appear on a printed report. No bullet points, just polished prose.`;
+  }
+
   if (analysisType === 'chat') {
     return data.question || 'What would you like to know about this campaign?';
   }

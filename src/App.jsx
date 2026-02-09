@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, ScatterChart, Scatter, Cell, ReferenceLine, AreaChart } from 'recharts';
-import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, Wand2, Loader2, MessageSquare, Send, Bot, User, Copy, FileText } from 'lucide-react';
+import { Upload, ChevronDown, ChevronUp, Calendar, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, BarChart3, X, Plus, Layers, Filter, ArrowRight, AlertCircle, CheckCircle, Zap, Clock, AlertTriangle, Rocket, PauseCircle, CalendarPlus, Calculator, Info, Sparkles, Star, ArrowLeftRight, Wand2, Loader2, MessageSquare, Send, Bot, User, Copy, FileText, Briefcase, Printer, ClipboardCopy } from 'lucide-react';
 
 // Parse the Fetch Rewards CSV format
 const parseCSV = (text, fileName) => {
@@ -815,6 +815,375 @@ const RecapGenerator = ({ campaignData, offers }) => {
   );
 };
 
+// Portfolio View - Multi-campaign sortable table
+const PortfolioView = ({ campaigns, onSelectCampaign }) => {
+  const [sortKey, setSortKey] = useState('campaignName');
+  const [sortDir, setSortDir] = useState('asc');
+
+  const toggleSort = (key) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
+  };
+
+  const portfolioRows = useMemo(() => campaigns.map(c => {
+    const summary = c.summary;
+    const today = new Date();
+    const startDate = summary?.startDateParsed;
+    const endDate = summary?.endDateParsed;
+    const totalBudget = summary?.budgetNum || 0;
+    const totalSpent = summary?.costNum || 0;
+    const totalDays = startDate && endDate ? daysBetween(startDate, endDate) : 0;
+    const daysElapsed = startDate ? daysBetween(startDate, today) : 0;
+    const daysRemaining = endDate ? Math.max(daysBetween(today, endDate), 0) : 0;
+    const avgSpend = daysElapsed > 0 ? totalSpent / daysElapsed : 0;
+    const daysUntilExhausted = avgSpend > 0 ? (totalBudget - totalSpent) / avgSpend : Infinity;
+    const projectedEnd = new Date(today.getTime() + daysUntilExhausted * 86400000);
+    const daysVariance = endDate ? daysBetween(projectedEnd, endDate) : 0;
+    let pacingStatus = 'onTrack';
+    if (daysRemaining <= 0) pacingStatus = 'complete';
+    else if (daysVariance < -7) pacingStatus = 'early';
+    else if (daysVariance > 14) pacingStatus = 'late';
+
+    const sales = c.dailyData.reduce((s, d) => s + d.sales, 0);
+    const spend = c.dailyData.reduce((s, d) => s + d.cost, 0);
+    const roas = spend > 0 ? sales / spend : 0;
+    const budgetPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+    return {
+      campaign: c,
+      campaignName: c.campaignName,
+      pacingStatus,
+      daysVariance,
+      roas,
+      sales,
+      spend,
+      budget: totalBudget,
+      budgetPct,
+      daysRemaining,
+      offerCount: c.offers.length
+    };
+  }), [campaigns]);
+
+  const sorted = useMemo(() => {
+    return [...portfolioRows].sort((a, b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [portfolioRows, sortKey, sortDir]);
+
+  const totals = useMemo(() => ({
+    spend: portfolioRows.reduce((s, r) => s + r.spend, 0),
+    sales: portfolioRows.reduce((s, r) => s + r.sales, 0),
+    budget: portfolioRows.reduce((s, r) => s + r.budget, 0),
+    get roas() { return this.spend > 0 ? this.sales / this.spend : 0; },
+    get budgetPct() { return this.budget > 0 ? (this.spend / this.budget) * 100 : 0; }
+  }), [portfolioRows]);
+
+  const pacingRowColor = { early: 'bg-rose-50', late: 'bg-amber-50', onTrack: 'bg-emerald-50', complete: 'bg-slate-50' };
+  const pacingLabel = { early: 'Ending Early', late: 'Under Pacing', onTrack: 'On Track', complete: 'Complete' };
+  const pacingDot = { early: 'bg-rose-400', late: 'bg-amber-400', onTrack: 'bg-emerald-400', complete: 'bg-slate-400' };
+
+  const columns = [
+    { key: 'campaignName', label: 'Campaign', align: 'left' },
+    { key: 'pacingStatus', label: 'Pacing', align: 'left' },
+    { key: 'roas', label: 'ROAS', align: 'right' },
+    { key: 'sales', label: 'Sales', align: 'right' },
+    { key: 'spend', label: 'Spend', align: 'right' },
+    { key: 'budget', label: 'Budget', align: 'right' },
+    { key: 'budgetPct', label: '% Used', align: 'right' },
+    { key: 'daysRemaining', label: 'Days Left', align: 'right' },
+    { key: 'offerCount', label: 'Offers', align: 'right' }
+  ];
+
+  const SortIcon = ({ col }) => {
+    if (sortKey !== col) return <ChevronDown size={14} className="opacity-30" />;
+    return sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="p-6 border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <Briefcase className="text-slate-700" size={22} />
+          <h2 className="text-lg font-bold text-slate-800">Portfolio Overview</h2>
+          <span className="text-sm text-slate-500">{campaigns.length} campaigns</span>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50">
+            <tr>
+              {columns.map(col => (
+                <th key={col.key} onClick={() => toggleSort(col.key)} className={`p-3 font-medium text-slate-600 cursor-pointer hover:bg-slate-100 select-none ${col.align === 'right' ? 'text-right' : 'text-left'}`}>
+                  <span className="inline-flex items-center gap-1">{col.label}<SortIcon col={col.key} /></span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((row, i) => (
+              <tr key={i} onClick={() => onSelectCampaign(row.campaign)} className={`border-t border-slate-100 cursor-pointer hover:brightness-95 transition-colors ${pacingRowColor[row.pacingStatus]}`}>
+                <td className="p-3 font-medium text-slate-800 max-w-[220px] truncate">{row.campaignName}</td>
+                <td className="p-3"><span className="inline-flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${pacingDot[row.pacingStatus]}`}></span>{pacingLabel[row.pacingStatus]}</span></td>
+                <td className="p-3 text-right font-semibold text-cyan-600">{row.roas.toFixed(2)}x</td>
+                <td className="p-3 text-right">{formatCurrency(row.sales)}</td>
+                <td className="p-3 text-right">{formatCurrency(row.spend)}</td>
+                <td className="p-3 text-right">{formatCurrency(row.budget)}</td>
+                <td className="p-3 text-right">{row.budgetPct.toFixed(1)}%</td>
+                <td className="p-3 text-right">{row.daysRemaining}</td>
+                <td className="p-3 text-right">{row.offerCount}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot className="bg-slate-100 border-t-2 border-slate-300">
+            <tr className="font-semibold text-slate-800">
+              <td className="p-3">Portfolio Total</td>
+              <td className="p-3"></td>
+              <td className="p-3 text-right text-cyan-600">{totals.roas.toFixed(2)}x</td>
+              <td className="p-3 text-right">{formatCurrency(totals.sales)}</td>
+              <td className="p-3 text-right">{formatCurrency(totals.spend)}</td>
+              <td className="p-3 text-right">{formatCurrency(totals.budget)}</td>
+              <td className="p-3 text-right">{totals.budgetPct.toFixed(1)}%</td>
+              <td className="p-3 text-right"></td>
+              <td className="p-3 text-right"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// Client Report - Printable one-page campaign summary
+const ClientReport = ({ campaign, metrics, pacingMetrics, conversionMetrics, aiSummary, aiLoading }) => {
+  const topOffers = useMemo(() => {
+    if (!campaign?.offers) return [];
+    return [...campaign.offers].sort((a, b) => b.roasNum - a.roasNum).slice(0, 5);
+  }, [campaign]);
+
+  const completionRate = conversionMetrics?.totals?.avgCompletionRate || 0;
+  const cac = metrics?.current?.cac || 0;
+
+  return (
+    <div className="report-printable bg-white p-8 max-w-4xl mx-auto">
+      {/* Campaign Header */}
+      <div className="border-b-2 border-slate-200 pb-4 mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">{campaign.campaignName}</h1>
+        <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+          {campaign.summary?.startDateParsed && campaign.summary?.endDateParsed && (
+            <span>{formatDateShort(campaign.summary.startDateParsed)} — {formatDateShort(campaign.summary.endDateParsed)}</span>
+          )}
+          {pacingMetrics && <PacingBadge status={pacingMetrics.status} daysVariance={pacingMetrics.daysVariance} />}
+        </div>
+      </div>
+
+      {/* 6 Key Metrics Grid */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="p-3 bg-cyan-50 rounded-lg border border-cyan-200 text-center">
+          <div className="text-xs text-cyan-600 font-medium">ROAS</div>
+          <div className="text-xl font-bold text-cyan-800">{metrics.current.roas.toFixed(2)}x</div>
+        </div>
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-center">
+          <div className="text-xs text-blue-600 font-medium">Sales</div>
+          <div className="text-xl font-bold text-blue-800">{formatCurrency(metrics.current.sales)}</div>
+        </div>
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-center">
+          <div className="text-xs text-amber-600 font-medium">Spend</div>
+          <div className="text-xl font-bold text-amber-800">{formatCurrency(metrics.current.cost)}</div>
+        </div>
+        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 text-center">
+          <div className="text-xs text-purple-600 font-medium">Buyers</div>
+          <div className="text-xl font-bold text-purple-800">{formatNumber(metrics.current.buyers)}</div>
+        </div>
+        <div className="p-3 bg-rose-50 rounded-lg border border-rose-200 text-center">
+          <div className="text-xs text-rose-600 font-medium">CAC</div>
+          <div className="text-xl font-bold text-rose-800">{formatCurrency(cac)}</div>
+        </div>
+        <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200 text-center">
+          <div className="text-xs text-emerald-600 font-medium">Completion Rate</div>
+          <div className="text-xl font-bold text-emerald-800">{completionRate.toFixed(1)}%</div>
+        </div>
+      </div>
+
+      {/* Budget & Pacing Snapshot */}
+      {pacingMetrics && (
+        <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <h3 className="font-semibold text-slate-700 mb-3 text-sm">Budget & Pacing</h3>
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-slate-600">Spent: {formatCurrency(pacingMetrics.totalSpent)}</span>
+            <span className="text-slate-600">Budget: {formatCurrency(pacingMetrics.totalBudget)}</span>
+          </div>
+          <div className="h-3 bg-slate-200 rounded-full overflow-hidden mb-2">
+            <div className={`h-full rounded-full ${pacingMetrics.status === 'early' ? 'bg-rose-500' : pacingMetrics.status === 'late' ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(pacingMetrics.budgetConsumedPct, 100)}%` }} />
+          </div>
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>{pacingMetrics.budgetConsumedPct.toFixed(1)}% spent</span>
+            <span>{pacingMetrics.daysRemaining > 0 ? `${pacingMetrics.daysRemaining} days remaining` : 'Complete'}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Top Offers Table */}
+      {topOffers.length > 0 && (
+        <div className="mb-6">
+          <h3 className="font-semibold text-slate-700 mb-3 text-sm">Top Offers by ROAS</h3>
+          <table className="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left p-2 font-medium text-slate-600">Tactic</th>
+                <th className="text-right p-2 font-medium text-slate-600">ROAS</th>
+                <th className="text-right p-2 font-medium text-slate-600">Buyers</th>
+                <th className="text-right p-2 font-medium text-slate-600">Completion</th>
+                <th className="text-right p-2 font-medium text-slate-600">Sales Lift</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topOffers.map((offer, i) => (
+                <tr key={i} className="border-t border-slate-100">
+                  <td className="p-2 text-slate-700">{offer['Tactic']}</td>
+                  <td className="p-2 text-right font-semibold text-cyan-600">{offer.roasNum.toFixed(2)}x</td>
+                  <td className="p-2 text-right">{formatNumber(offer.buyersNum)}</td>
+                  <td className="p-2 text-right">{offer.completionRate.toFixed(1)}%</td>
+                  <td className="p-2 text-right text-emerald-600">{offer.salesLiftNum.toFixed(1)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* AI Executive Summary */}
+      <div className="mb-6">
+        <h3 className="font-semibold text-slate-700 mb-3 text-sm">Executive Summary</h3>
+        {aiLoading ? (
+          <div className="flex items-center gap-2 text-slate-500 text-sm p-4 bg-slate-50 rounded-lg">
+            <Loader2 size={16} className="animate-spin" /> Generating executive summary...
+          </div>
+        ) : aiSummary ? (
+          <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap p-4 bg-slate-50 rounded-lg border border-slate-200">{aiSummary}</div>
+        ) : (
+          <div className="text-sm text-slate-400 italic p-4 bg-slate-50 rounded-lg">Summary unavailable</div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-slate-200 pt-3 text-xs text-slate-400 text-center">
+        Report generated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} — Fetch Campaign Analytics
+      </div>
+    </div>
+  );
+};
+
+// Report Modal - wrapper with print/copy controls
+const ReportModal = ({ campaign, metrics, pacingMetrics, conversionMetrics, onClose }) => {
+  const [aiSummary, setAiSummary] = useState('');
+  const [aiLoading, setAiLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  React.useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const completionRate = conversionMetrics?.totals?.avgCompletionRate || 0;
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            campaignData: {
+              campaignName: campaign.campaignName,
+              dateRange: campaign.summary ? `${formatDateShort(campaign.summary.startDateParsed)} to ${formatDateShort(campaign.summary.endDateParsed)}` : '',
+              sales: metrics.current.sales,
+              cost: metrics.current.cost,
+              roas: metrics.current.roas,
+              buyers: metrics.current.buyers,
+              budget: campaign.summary?.budgetNum,
+              spent: campaign.summary?.costNum,
+              budgetConsumedPct: pacingMetrics?.budgetConsumedPct,
+              daysElapsed: pacingMetrics?.daysElapsed,
+              totalDays: pacingMetrics?.totalCampaignDays,
+              timeElapsedPct: pacingMetrics?.timeElapsedPct,
+              completionRate,
+              offers: campaign.offers?.map(o => ({
+                tactic: o['Tactic'],
+                roas: o.roasNum,
+                buyers: o.buyersNum,
+                completionRate: o.completionRate,
+                salesLift: o.salesLiftNum,
+                isAcquisitionTactic: o.isAcquisitionTactic,
+                isBrandBuyerTactic: o.isBrandBuyerTactic
+              }))
+            },
+            analysisType: 'report',
+            chatHistory: []
+          })
+        });
+        const data = await response.json();
+        if (data.analysis) setAiSummary(data.analysis);
+      } catch (err) {
+        setAiSummary('');
+      } finally {
+        setAiLoading(false);
+      }
+    };
+    fetchSummary();
+  }, [campaign, metrics, pacingMetrics, conversionMetrics]);
+
+  const handlePrint = () => window.print();
+
+  const handleCopy = () => {
+    const completionRate = conversionMetrics?.totals?.avgCompletionRate || 0;
+    const lines = [
+      `Campaign Report: ${campaign.campaignName}`,
+      '',
+      `ROAS: ${metrics.current.roas.toFixed(2)}x`,
+      `Sales: ${formatCurrency(metrics.current.sales)}`,
+      `Spend: ${formatCurrency(metrics.current.cost)}`,
+      `Buyers: ${formatNumber(metrics.current.buyers)}`,
+      `CAC: ${formatCurrency(metrics.current.cac)}`,
+      `Completion Rate: ${completionRate.toFixed(1)}%`,
+    ];
+    if (pacingMetrics) {
+      lines.push('', `Budget: ${formatCurrency(pacingMetrics.totalBudget)} (${pacingMetrics.budgetConsumedPct.toFixed(1)}% used)`, `Days Remaining: ${Math.max(pacingMetrics.daysRemaining, 0)}`);
+    }
+    if (aiSummary) {
+      lines.push('', 'Executive Summary:', aiSummary);
+    }
+    navigator.clipboard.writeText(lines.join('\n'));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto py-8 print:p-0 print:bg-white">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 print:shadow-none print:rounded-none print:m-0 print:max-w-none">
+        {/* Modal Controls (hidden on print) */}
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 print:hidden">
+          <h2 className="font-semibold text-slate-800 flex items-center gap-2"><FileText size={20} /> Client Report</h2>
+          <div className="flex items-center gap-2">
+            <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">
+              {copied ? <><CheckCircle size={14} className="text-emerald-600" /> Copied</> : <><ClipboardCopy size={14} /> Copy Summary</>}
+            </button>
+            <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+              <Printer size={14} /> Print
+            </button>
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"><X size={20} /></button>
+          </div>
+        </div>
+        <ClientReport
+          campaign={campaign}
+          metrics={metrics}
+          pacingMetrics={pacingMetrics}
+          conversionMetrics={conversionMetrics}
+          aiSummary={aiSummary}
+          aiLoading={aiLoading}
+        />
+      </div>
+    </div>
+  );
+};
+
 // Main Dashboard
 export default function FetchDashboard() {
   const [campaigns, setCampaigns] = useState([]);
@@ -827,7 +1196,8 @@ export default function FetchDashboard() {
   const [chartType, setChartType] = useState('line');
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedOffer, setSelectedOffer] = useState(null);
-  
+  const [showReportModal, setShowReportModal] = useState(false);
+
   // Pacing state
   const [customEndDate, setCustomEndDate] = useState('');
   const [extensionDays, setExtensionDays] = useState(30);
@@ -840,7 +1210,7 @@ export default function FetchDashboard() {
 
   const handleFileUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
-    
+
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -848,8 +1218,12 @@ export default function FetchDashboard() {
           const parsed = parseCSV(event.target.result, file.name);
           setCampaigns(prev => {
             const exists = prev.find(c => c.fileName === file.name);
-            if (exists) return prev.map(c => c.fileName === file.name ? parsed : c);
-            return [...prev, parsed];
+            const updated = exists ? prev.map(c => c.fileName === file.name ? parsed : c) : [...prev, parsed];
+            // Auto-select portfolio tab when 2nd campaign is added
+            if (!exists && updated.length >= 2) {
+              setActiveTab('portfolio');
+            }
+            return updated;
           });
           if (!selectedCampaign) {
             setSelectedCampaign(parsed);
@@ -1180,6 +1554,7 @@ export default function FetchDashboard() {
             {/* Tabs */}
             <div className="flex gap-2 mb-6 flex-wrap">
               {[
+                ...(campaigns.length >= 2 ? [{ id: 'portfolio', label: 'Portfolio', icon: Briefcase }] : []),
                 { id: 'overview', label: 'Overview', icon: BarChart3 },
                 { id: 'pacing', label: 'Pacing & Upsell', icon: Rocket },
                 { id: 'promo', label: 'Promo Analysis', icon: Sparkles },
@@ -1196,6 +1571,19 @@ export default function FetchDashboard() {
                 </button>
               ))}
             </div>
+
+            {/* PORTFOLIO TAB */}
+            {activeTab === 'portfolio' && campaigns.length >= 2 && (
+              <PortfolioView
+                campaigns={campaigns}
+                onSelectCampaign={(c) => {
+                  setSelectedCampaign(c);
+                  setCustomEndDate('');
+                  if (c.dailyData.length > 0) setDateRange({ start: c.dailyData[0].date, end: c.dailyData[c.dailyData.length - 1].date });
+                  setActiveTab('overview');
+                }}
+              />
+            )}
 
             {/* OVERVIEW TAB */}
             {activeTab === 'overview' && (
@@ -1252,6 +1640,17 @@ export default function FetchDashboard() {
                   }}
                   offers={selectedCampaign?.offers}
                 />
+
+                {/* Generate Client Report Button */}
+                <div className="flex justify-end mb-6">
+                  <button
+                    onClick={() => setShowReportModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors font-medium text-sm"
+                  >
+                    <FileText size={16} />
+                    Generate Client Report
+                  </button>
+                </div>
 
                 {/* CAC Info Callout */}
                 <CACInfoCallout hasAcquisitionOffers={offerTypeFlags.hasAcquisition} hasBrandBuyerOffers={offerTypeFlags.hasBrandBuyer} />
@@ -1899,6 +2298,17 @@ export default function FetchDashboard() {
               <input type="file" accept=".csv" multiple onChange={handleFileUpload} className="hidden" />
             </label>
           </div>
+        )}
+
+        {/* Report Modal */}
+        {showReportModal && selectedCampaign && (
+          <ReportModal
+            campaign={selectedCampaign}
+            metrics={metrics}
+            pacingMetrics={pacingMetrics}
+            conversionMetrics={conversionMetrics}
+            onClose={() => setShowReportModal(false)}
+          />
         )}
       </div>
     </div>

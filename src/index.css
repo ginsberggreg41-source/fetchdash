@@ -27,3 +27,24 @@
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+/* Print styles - show only the report */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .report-printable,
+  .report-printable * {
+    visibility: visible;
+  }
+  .report-printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+  }
+  .print\\:hidden {
+    display: none !important;
+  }
+}
